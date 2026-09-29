@@ -13,14 +13,14 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { colors, layout } from '../theme/authLanding';
-import EyeNotIcon from '../../assets/auth/eye-not.svg';
-import EyeIcon from '../../assets/auth/eye.svg';
+import { colors, layout } from '../../theme/authLanding';
+import EyeNotIcon from '../../../assets/auth/eye-not.svg';
+import EyeIcon from '../../../assets/auth/eye.svg';
 import {
   emailSpacing as spacing,
   emailTypography,
   getEmailContentTop,
-} from '../theme/emailSignIn';
+} from '../../theme/emailSignIn';
 import AuthHeader from './components/AuthHeader';
 import BackButton from './components/BackButton';
 import FormField from './components/FormField';

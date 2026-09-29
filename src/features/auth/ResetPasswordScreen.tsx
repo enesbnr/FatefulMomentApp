@@ -10,11 +10,11 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { colors, layout } from '../theme/authLanding';
+import { colors, layout } from '../../theme/authLanding';
 import {
   emailSpacing,
   getEmailContentTop,
-} from '../theme/emailSignIn';
+} from '../../theme/emailSignIn';
 import AuthButton from './components/AuthButton';
 import AuthHeader from './components/AuthHeader';
 import BackButton from './components/BackButton';

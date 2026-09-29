@@ -15,8 +15,8 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
-import { colors, layout } from '../../theme/authLanding';
-import { emailTypography, fieldColors } from '../../theme/emailSignIn';
+import { colors, layout } from '../../../theme/authLanding';
+import { emailTypography, fieldColors } from '../../../theme/emailSignIn';
 
 type FormFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
   leading?: ReactNode;

@@ -1,6 +1,6 @@
 import { Pressable } from 'react-native';
-import BackArrow from '../../../assets/auth/back-arrow.svg';
-import { backStyle } from '../../theme/emailSignIn';
+import BackArrow from '../../../../assets/auth/back-arrow.svg';
+import { backStyle } from '../../../theme/emailSignIn';
 
 export default function BackButton({ onPress }: { onPress: () => void }) {
   return (

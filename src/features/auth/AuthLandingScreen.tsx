@@ -3,8 +3,8 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import EmailIcon from '../../assets/auth/email-icon.svg';
-import AppleIcon from '../../assets/auth/apple-icon.svg';
+import EmailIcon from '../../../assets/auth/email-icon.svg';
+import AppleIcon from '../../../assets/auth/apple-icon.svg';
 import AuthButton from './components/AuthButton';
 import AuthHeader from './components/AuthHeader';
 import {
@@ -14,7 +14,7 @@ import {
   getContentTopSpacing,
   layout,
   typography,
-} from '../theme/authLanding';
+} from '../../theme/authLanding';
 
 const noop = () => {};
 
@@ -80,7 +80,7 @@ export default function AuthLandingScreen({
                 onPress={noop}
                 icon={
                   <Image
-                    source={require('../../assets/auth/google-icon.png')}
+                    source={require('../../../assets/auth/google-icon.png')}
                     style={styles.googleIcon}
                     resizeMode="contain"
                   />

@@ -9,13 +9,13 @@ import { StyleSheet, Text, TextInput } from 'react-native';
 import App from '../App';
 import Orientation from 'react-native-orientation-locker';
 import HomeScreen from '../src/features/scenarios/home/HomeScreen';
-import CheckYourEmailScreen from '../src/auth/CheckYourEmailScreen';
-import CreateAccountScreen from '../src/auth/CreateAccountScreen';
-import EmailSignInScreen from '../src/auth/EmailSignInScreen';
-import ResetPasswordScreen from '../src/auth/ResetPasswordScreen';
-import AuthButton from '../src/auth/components/AuthButton';
-import BackButton from '../src/auth/components/BackButton';
-import FormField from '../src/auth/components/FormField';
+import CheckYourEmailScreen from '../src/features/auth/CheckYourEmailScreen';
+import CreateAccountScreen from '../src/features/auth/CreateAccountScreen';
+import EmailSignInScreen from '../src/features/auth/EmailSignInScreen';
+import ResetPasswordScreen from '../src/features/auth/ResetPasswordScreen';
+import AuthButton from '../src/features/auth/components/AuthButton';
+import BackButton from '../src/features/auth/components/BackButton';
+import FormField from '../src/features/auth/components/FormField';
 
 test('email flow keeps password masked, gates submission, and returns to landing', async () => {
   let tree!: Renderer.ReactTestRenderer;

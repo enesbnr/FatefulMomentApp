@@ -1,8 +1,8 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, layout } from '../theme/authLanding';
-import { emailSpacing, getEmailContentTop } from '../theme/emailSignIn';
+import { colors, layout } from '../../theme/authLanding';
+import { emailSpacing, getEmailContentTop } from '../../theme/emailSignIn';
 import AuthButton from './components/AuthButton';
 import BackButton from './components/BackButton';
 

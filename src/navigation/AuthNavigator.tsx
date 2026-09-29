@@ -1,12 +1,12 @@
 import { Keyboard, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AuthLandingScreen from '../auth/AuthLandingScreen';
-import CheckYourEmailScreen from '../auth/CheckYourEmailScreen';
+import AuthLandingScreen from '../features/auth/AuthLandingScreen';
+import CheckYourEmailScreen from '../features/auth/CheckYourEmailScreen';
 import CreateAccountScreen, {
   type DummyAccount,
-} from '../auth/CreateAccountScreen';
-import EmailSignInScreen from '../auth/EmailSignInScreen';
-import ResetPasswordScreen from '../auth/ResetPasswordScreen';
+} from '../features/auth/CreateAccountScreen';
+import EmailSignInScreen from '../features/auth/EmailSignInScreen';
+import ResetPasswordScreen from '../features/auth/ResetPasswordScreen';
 import type { AuthScreenProps, AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();

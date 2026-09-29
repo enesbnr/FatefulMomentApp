@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, layout, typography } from '../../theme/authLanding';
+import { colors, layout, typography } from '../../../theme/authLanding';
 
 type AuthButtonProps = {
   variant: 'primaryGlass' | 'social';

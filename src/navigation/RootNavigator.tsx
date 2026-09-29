@@ -2,7 +2,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Orientation from 'react-native-orientation-locker';
-import type { DummyAccount } from '../auth/CreateAccountScreen';
+import type { DummyAccount } from '../features/auth/CreateAccountScreen';
 import AuthNavigator from './AuthNavigator';
 import GameplayNavigator from './GameplayNavigator';
 import type { RootStackParamList } from './types';

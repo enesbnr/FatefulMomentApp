@@ -8,7 +8,7 @@ import {
   isValidEmail,
   normalizeEmail,
   validationMessages,
-} from '../src/auth/validation/authValidation';
+} from '../src/features/auth/validation/authValidation';
 
 describe('auth validation', () => {
   test('normalizes and validates email consistently', () => {

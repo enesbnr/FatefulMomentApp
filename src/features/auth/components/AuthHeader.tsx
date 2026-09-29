@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { layout, spacing, typography } from '../../theme/authLanding';
+import { layout, spacing, typography } from '../../../theme/authLanding';
 
 type Props = {
   subtitle?: string;
@@ -13,7 +13,7 @@ export default function AuthHeader({
   return (
     <View>
       <Image
-        source={require('../../../assets/auth/fateful-moment-logo.png')}
+        source={require('../../../../assets/auth/fateful-moment-logo.png')}
         style={styles.logo}
         accessibilityLabel="Fateful Moment"
       />

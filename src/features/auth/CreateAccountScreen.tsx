@@ -21,16 +21,16 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import CheckNotIcon from '../../assets/auth/check-not.svg';
-import CheckYesIcon from '../../assets/auth/check-yes.svg';
-import EyeNotIcon from '../../assets/auth/eye-not.svg';
-import EyeIcon from '../../assets/auth/eye.svg';
-import { colors, layout } from '../theme/authLanding';
+import CheckNotIcon from '../../../assets/auth/check-not.svg';
+import CheckYesIcon from '../../../assets/auth/check-yes.svg';
+import EyeNotIcon from '../../../assets/auth/eye-not.svg';
+import EyeIcon from '../../../assets/auth/eye.svg';
+import { colors, layout } from '../../theme/authLanding';
 import {
   emailSpacing,
   emailTypography,
   getEmailContentTop,
-} from '../theme/emailSignIn';
+} from '../../theme/emailSignIn';
 import AuthButton from './components/AuthButton';
 import AuthHeader from './components/AuthHeader';
 import BackButton from './components/BackButton';
