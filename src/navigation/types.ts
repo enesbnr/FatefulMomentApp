@@ -37,6 +37,9 @@ export type GameplayDrawerScreenProps<
   RouteName extends keyof GameplayDrawerParamList,
 > = DrawerScreenProps<GameplayDrawerParamList, RouteName>;
 
+export type RootScreenProps<RouteName extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, RouteName>;
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

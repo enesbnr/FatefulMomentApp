@@ -10,6 +10,7 @@ import AppDrawerContent from './components/AppDrawerContent';
 import useLeftDrawerInset from './hooks/useLeftDrawerInset';
 import type {
   GameplayDrawerParamList,
+  GameplayScreenProps,
   GameplayStackParamList,
 } from './types';
 
@@ -24,7 +25,7 @@ export default function GameplayNavigator() {
       <StatusBar barStyle="light-content" hidden />
       <Drawer.Navigator
         initialRouteName="Scenarios"
-        drawerContent={props => <AppDrawerContent {...props} />}
+        drawerContent={AppDrawerContent}
         screenOptions={{
           headerShown: false,
           drawerPosition: 'left',
@@ -54,23 +55,23 @@ export default function GameplayNavigator() {
 function ScenarioNavigator() {
   return (
     <Stack.Navigator
-        initialRouteName="Home"
-        screenOptions={{ headerShown: false, animation: 'none' }}
-      >
-        <Stack.Screen name="Home">
-          {({ navigation }) => (
-            <HomeScreen
-              onScenarioStart={scenarioId =>
-                navigation.navigate('ScenarioBriefing', { scenarioId })
-              }
-            />
-          )}
-        </Stack.Screen>
-        <Stack.Screen
-          name="ScenarioBriefing"
-          component={ScenarioBriefingScreen}
-        />
-        <Stack.Screen name="ScenarioVideo" component={ScenarioVideoScreen} />
-      </Stack.Navigator>
+      initialRouteName="Home"
+      screenOptions={{ headerShown: false, animation: 'none' }}
+    >
+      <Stack.Screen name="Home" component={HomeRoute} />
+      <Stack.Screen
+        name="ScenarioBriefing"
+        component={ScenarioBriefingScreen}
+      />
+      <Stack.Screen name="ScenarioVideo" component={ScenarioVideoScreen} />
+    </Stack.Navigator>
   );
+}
+
+function HomeRoute({ navigation }: GameplayScreenProps<'Home'>) {
+  const handleScenarioStart = (scenarioId: string) => {
+    navigation.navigate('ScenarioBriefing', { scenarioId });
+  };
+
+  return <HomeScreen onScenarioStart={handleScenarioStart} />;
 }

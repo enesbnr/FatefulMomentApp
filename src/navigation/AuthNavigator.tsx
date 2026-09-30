@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { Keyboard, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthLandingScreen from '../features/auth/AuthLandingScreen';
@@ -19,29 +20,35 @@ type Props = {
 
 export default function AuthNavigator(props: Props) {
   return (
-    <>
+    <AuthNavigatorContext.Provider value={props}>
       <StatusBar barStyle="light-content" hidden={false} />
       <Stack.Navigator
         initialRouteName="Landing"
         screenOptions={{ headerShown: false, animation: 'none' }}
       >
         <Stack.Screen name="Landing" component={LandingRoute} />
-        <Stack.Screen name="EmailSignIn">
-          {screenProps => <EmailSignInRoute {...screenProps} {...props} />}
-        </Stack.Screen>
-        <Stack.Screen name="CreateAccount">
-          {screenProps => <CreateAccountRoute {...screenProps} {...props} />}
-        </Stack.Screen>
+        <Stack.Screen name="EmailSignIn" component={EmailSignInRoute} />
+        <Stack.Screen name="CreateAccount" component={CreateAccountRoute} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordRoute} />
         <Stack.Screen name="CheckEmail" component={CheckEmailRoute} />
       </Stack.Navigator>
-    </>
+    </AuthNavigatorContext.Provider>
   );
 }
 
-function LandingRoute({
-  navigation,
-}: AuthScreenProps<'Landing'>) {
+const AuthNavigatorContext = createContext<Props | null>(null);
+
+function useAuthNavigatorContext() {
+  const context = useContext(AuthNavigatorContext);
+  if (!context) {
+    throw new Error(
+      'useAuthNavigatorContext must be used within AuthNavigator',
+    );
+  }
+  return context;
+}
+
+function LandingRoute({ navigation }: AuthScreenProps<'Landing'>) {
   return (
     <AuthLandingScreen
       onContinueWithEmail={() => navigation.navigate('EmailSignIn')}
@@ -49,11 +56,8 @@ function LandingRoute({
   );
 }
 
-function EmailSignInRoute({
-  navigation,
-  account,
-  onAuthenticated,
-}: AuthScreenProps<'EmailSignIn'> & Props) {
+function EmailSignInRoute({ navigation }: AuthScreenProps<'EmailSignIn'>) {
+  const { account, onAuthenticated } = useAuthNavigatorContext();
   return (
     <EmailSignInScreen
       onBack={() => navigation.goBack()}
@@ -70,10 +74,8 @@ function EmailSignInRoute({
   );
 }
 
-function CreateAccountRoute({
-  navigation,
-  onAccountCreated,
-}: AuthScreenProps<'CreateAccount'> & Props) {
+function CreateAccountRoute({ navigation }: AuthScreenProps<'CreateAccount'>) {
+  const { onAccountCreated } = useAuthNavigatorContext();
   const returnToSignIn = () => navigation.popTo('EmailSignIn');
   return (
     <CreateAccountScreen
