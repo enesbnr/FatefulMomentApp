@@ -52,7 +52,7 @@ Kararlar scenario verisinde tanımlanan zamanlara göre açılır. Her karar şu
 - acil durum görünümünün başlayacağı eşik,
 - seçenekler ve seçeneklerin DNA etkileri.
 
-Karar katmanı video ekranının üzerinde gösterilir. Karar açıldığında video durur; seçim tamamlandıktan sonra aynı video devam eder. Böylece video ayrı ekranlara bölünmeden tek playback oturumu korunur.
+Karar katmanı video ekranının üzerinde gösterilir. Karar açıldığında video durur; seçim tamamlandıktan sonra aynı video devam eder. Kullanıcı süre içinde seçim yapmazsa karar sıfır DNA etkisiyle cevapsız kaydedilir, tarihsel gerçek seçenek kısa süre gösterilir ve video otomatik devam eder. Böylece video ayrı ekranlara bölünmeden tek playback oturumu korunur.
 
 ## Video resume ve ilerleme kaydı
 
@@ -78,6 +78,13 @@ ScenarioVideoScreen
 Bu sınır sayesinde ileride API eklendiğinde ekran ve playback mantığını değiştirmeden yeni bir repository implementasyonu kullanılabilir. Testlerde aynı sözleşmenin bellek içi implementasyonu kullanılır.
 
 Otomatik ilerleme kayıtları gereksiz disk yazımını azaltmak için aralıklı yapılır. Uygulama arka plana geçtiğinde, kullanıcı geri çıktığında ve cevap değiştiğinde bekleyen veri ayrıca kaydedilir.
+
+## Platform ve lifecycle kararları
+
+- **Cevapsız karar:** Karar süresi seçim yapılmadan biterse cevap `optionId: null` olarak kaydedilir. Bu kayıt sıfır DNA etkisini temsil eder. Tarihsel gerçek seçenek kısa süre gösterildikten sonra video devam eder ve resume sırasında aynı karar yeniden açılmaz.
+- **iOS gizlilik anahtarları:** Uygulamanın kullanmadığı izin anahtarları `Info.plist` içinde tutulmaz. Konum servisi kullanılmadığı için boş `NSLocationWhenInUseUsageDescription` kaydı kaldırılmıştır.
+- **Android ekran yönü:** `MainActivity`, manifest seviyesinde belirli bir yöne kilitlenmez. `screenOrientation="unspecified"` kullanılır; Auth için portrait, gameplay için landscape yönü navigation boundary'leri üzerinden runtime'da yönetilir.
+- **Navigation component kimliği:** Stack ekranları, Home route’u ve drawer content modül seviyesindeki sabit component referanslarıyla tanımlanır. Değişken auth verisi Context üzerinden aktarılır. Böylece üst state güncellemeleri alt navigatörleri gereksiz yere unmount etmez.
 
 ## Medya yönetimi
 
