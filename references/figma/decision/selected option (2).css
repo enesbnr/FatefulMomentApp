@@ -1,0 +1,1023 @@
+/* Selected Option */
+
+position: relative;
+width: 812px;
+height: 375px;
+left: 4882px;
+top: 1139.74px;
+
+background: #020618;
+border-radius: 0px;
+
+
+/* Video Container */
+
+position: absolute;
+width: 812px;
+height: 375px;
+left: 0px;
+top: 0px;
+
+background: #020618;
+border-radius: 0px;
+
+
+/* Navigation Bar */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 812px;
+height: 48px;
+left: calc(50% - 812px/2 + 0.34px);
+top: 0px;
+
+border-bottom: 1px solid #314158;
+
+
+/* Trailing icon
+
+👩‍🎨 This icon is custom
+*/
+
+position: absolute;
+visibility: hidden;
+width: 24px;
+height: 24px;
+left: 24px;
+top: calc(50% - 24px/2);
+
+
+
+/* Leading icon
+
+👩‍🎨 This icon is custom
+*/
+
+position: absolute;
+visibility: hidden;
+width: 24px;
+height: 24px;
+right: 24px;
+top: calc(50% - 24px/2);
+
+
+
+/* Title */
+
+position: absolute;
+visibility: hidden;
+width: 141px;
+height: 20px;
+left: calc(50% - 141px/2 + 0.5px);
+top: calc(50% - 20px/2 - 2px);
+
+font-family: 'Inter';
+font-style: italic;
+font-weight: 900;
+font-size: 20px;
+line-height: 20px;
+/* identical to box height, or 100% */
+text-align: center;
+text-transform: capitalize;
+
+color: #F1F5F9;
+
+
+
+/* Container */
+
+position: absolute;
+width: 812px;
+height: 375px;
+left: 0px;
+top: 0px;
+
+background: linear-gradient(0deg, rgba(0, 0, 0, 0.49), rgba(0, 0, 0, 0.49)), url(IMG_3456.png), url(VID-20260302-WA0002.png);
+
+
+/* Container */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+position: absolute;
+width: 764px;
+height: 6px;
+left: calc(50% - 764px/2);
+top: 345px;
+
+background: #1D293D;
+opacity: 0.56;
+border-radius: 999px;
+
+
+/* Container */
+
+width: 66px;
+height: 6px;
+
+background: #FB2C36;
+box-shadow: 0px 0px 10px rgba(6, 182, 212, 0.5);
+border-radius: 999px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Overlay */
+
+position: absolute;
+width: 812px;
+height: 375px;
+left: 0px;
+top: 0px;
+
+background: radial-gradient(50% 50% at 50% 50%, rgba(255, 0, 0, 0) 80.6%, rgba(255, 0, 0, 0.12) 100%);
+
+
+/* MusicPlayer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+position: absolute;
+visibility: hidden;
+width: 289px;
+height: 48px;
+left: 523px;
+top: 0px;
+
+
+
+/* Container */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+
+width: 289px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Container */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 6px 16px;
+gap: 16px;
+
+width: 289px;
+height: 48px;
+
+background: rgba(15, 23, 43, 0.8);
+border: 1px solid rgba(49, 65, 88, 0.5);
+box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+border-radius: 999px 0px 0px 999px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 16px;
+height: 16px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Icon */
+
+width: 16px;
+height: 13.98px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 37.5%;
+right: 20.83%;
+top: 16.67%;
+bottom: 16.67%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 20.83%;
+right: 79.17%;
+top: 20.83%;
+bottom: 20.83%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Button */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px 0px 0px 1.96357px;
+
+width: 32px;
+height: 32px;
+
+background: rgba(0, 184, 219, 0.1);
+border: 1px solid rgba(0, 184, 219, 0.3);
+box-shadow: 0px 0px 15px rgba(6, 182, 212, 0.2);
+border-radius: 999px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Icon */
+
+width: 16px;
+height: 16px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 16.67%;
+top: 12.5%;
+bottom: 12.5%;
+
+background: #00D3F2;
+border: 1.16492px solid #00D3F2;
+
+
+/* Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 16px;
+height: 16px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Icon */
+
+width: 16px;
+height: 13.98px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 20.83%;
+right: 37.5%;
+top: 16.67%;
+bottom: 16.67%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 79.17%;
+right: 20.83%;
+top: 20.83%;
+bottom: 20.83%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Container */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 0px;
+
+width: 103px;
+height: 29px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 44px;
+height: 14px;
+
+opacity: 0.62;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Standby */
+
+position: absolute;
+width: 44px;
+height: 14px;
+left: 0px;
+top: 0px;
+
+font-family: 'Menlo';
+font-style: normal;
+font-weight: 400;
+font-size: 9px;
+line-height: 14px;
+/* identical to box height, or 150% */
+letter-spacing: 0.9px;
+text-transform: uppercase;
+
+color: rgba(0, 211, 243, 0.8);
+
+
+
+/* Text */
+
+width: 103px;
+height: 15px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* This is the FateF... */
+
+position: absolute;
+width: 99px;
+height: 15px;
+left: 0px;
+top: 0px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 700;
+font-size: 10px;
+line-height: 15px;
+/* identical to box height, or 150% */
+text-transform: uppercase;
+
+color: #F1F5F9;
+
+
+
+/* Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 24px;
+height: 24px;
+
+border-radius: 999px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* Icon */
+
+width: 13.98px;
+height: 13.98px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 87.5%;
+right: 12.5%;
+top: 25%;
+bottom: 37.5%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 66.67%;
+right: 12.5%;
+top: 54.17%;
+bottom: 25%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 12.5%;
+right: 50%;
+top: 50%;
+bottom: 50%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 12.5%;
+right: 33.33%;
+top: 25%;
+bottom: 75%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Vector */
+
+position: absolute;
+left: 12.5%;
+right: 50%;
+top: 75%;
+bottom: 25%;
+
+border: 1.16492px solid #62748E;
+
+
+/* Nav */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+position: absolute;
+width: 24px;
+height: 24px;
+left: 24px;
+top: 16px;
+
+
+
+/* arrow-left */
+
+width: 24px;
+height: 24px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* icon */
+
+position: absolute;
+left: 17.02%;
+right: 17.02%;
+top: 17.02%;
+bottom: 17.02%;
+
+background: #E2E8F0;
+
+
+/* h3 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 4px 0px;
+gap: 8px;
+
+display: none;
+width: 43px;
+height: 28px;
+
+border-radius: 0px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Status Bar */
+
+position: absolute;
+visibility: hidden;
+width: 375px;
+height: 44px;
+left: 0px;
+bottom: 331px;
+
+transform: rotate(-90deg);
+
+
+/* Home Indicator */
+
+position: absolute;
+visibility: hidden;
+width: 375px;
+height: 34px;
+right: -341px;
+bottom: 341px;
+
+transform: rotate(-90deg);
+
+
+/* Options */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 12px;
+
+position: absolute;
+width: 702px;
+height: 222px;
+left: 66px;
+top: calc(50% - 222px/2);
+
+
+
+/* Row 1 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+width: 702px;
+height: 66px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Option Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 8px 16px;
+
+width: 345px;
+height: 66px;
+
+background: rgba(15, 23, 43, 0.63);
+border: 1px solid #F8FAFC;
+border-radius: 16px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* div */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+display: none;
+width: 32px;
+height: 32px;
+
+background: #0F172B;
+border: 1px solid #1D293D;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 311px;
+height: 32px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 16px;
+/* or 133% */
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+
+/* Option Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 8px 16px;
+
+width: 345px;
+height: 66px;
+
+background: linear-gradient(91.21deg, rgba(15, 23, 43, 0.63) 0%, rgba(0, 211, 243, 0.63) 50%, rgba(15, 23, 43, 0.63) 100%), ;
+border: 2px solid #F8FAFC;
+border-radius: 16px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 309px;
+height: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 16px;
+/* identical to box height, or 133% */
+text-align: center;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* Row 2 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+width: 702px;
+height: 66px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Option Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 8px 16px;
+
+width: 345px;
+height: 66px;
+
+background: rgba(15, 23, 43, 0.63);
+border: 1px solid #F8FAFC;
+border-radius: 16px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* div */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+display: none;
+width: 32px;
+height: 32px;
+
+background: #0F172B;
+border: 1px solid #1D293D;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 311px;
+height: 48px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 16px;
+/* or 133% */
+letter-spacing: -0.150391px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+
+/* Option Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 8px 16px;
+
+width: 345px;
+height: 66px;
+
+background: rgba(15, 23, 43, 0.63);
+border: 1px solid #F8FAFC;
+border-radius: 16px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* div */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+display: none;
+width: 32px;
+height: 32px;
+
+background: #0F172B;
+border: 1px solid #1D293D;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 311px;
+height: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 16px;
+/* identical to box height, or 133% */
+text-align: center;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+
+/* Row 3 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+width: 702px;
+height: 66px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Option Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 8px 16px;
+
+width: 345px;
+height: 66px;
+
+background: rgba(15, 23, 43, 0.63);
+border: 1px solid #F8FAFC;
+border-radius: 16px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* div */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+display: none;
+width: 32px;
+height: 32px;
+
+background: #0F172B;
+border: 1px solid #1D293D;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 311px;
+height: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 16px;
+/* identical to box height, or 133% */
+text-align: center;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;

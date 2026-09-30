@@ -3,6 +3,7 @@ import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Orientation from 'react-native-orientation-locker';
 import type { DummyAccount } from '../features/auth/CreateAccountScreen';
+import { demoAccount } from '../features/auth/data/demoAccount';
 import AuthNavigator from './AuthNavigator';
 import GameplayNavigator from './GameplayNavigator';
 import type { RootStackParamList } from './types';
@@ -10,7 +11,7 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const [account, setAccount] = useState<DummyAccount | null>(null);
+  const [account, setAccount] = useState<DummyAccount>(demoAccount);
 
   return (
     <NavigationContainer>

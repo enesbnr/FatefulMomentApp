@@ -11,6 +11,8 @@ export type AuthStackParamList = {
 
 export type GameplayStackParamList = {
   Home: undefined;
+  ScenarioBriefing: { scenarioId: string };
+  ScenarioVideo: { scenarioId: string };
 };
 
 export type RootStackParamList = {

@@ -1,11 +1,12 @@
 import { StyleSheet } from 'react-native';
+import { appColors } from './colors';
 
 export const colors = {
-  background: '#020618',
-  white: '#FFFFFF',
-  cyan: '#00D3F3',
+  background: appColors.background,
+  white: appColors.white,
+  cyan: appColors.accent,
   subtitle: '#90A1B9',
-  dividerText: '#62748E',
+  dividerText: appColors.textMuted,
   dividerLine: 'rgba(255, 255, 255, 0.1)',
   emailBackground: 'rgba(0, 211, 243, 0.14)',
   socialBackground: 'rgba(17, 24, 39, 0.8)',
