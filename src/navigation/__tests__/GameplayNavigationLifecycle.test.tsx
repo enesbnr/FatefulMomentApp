@@ -20,6 +20,7 @@ import GameplayNavigator from '../GameplayNavigator';
 
 test('unmounts completed video and returns Scenarios to Home', async () => {
   const repository = new MemoryScenarioProgressRepository();
+  const saveProgress = jest.spyOn(repository, 'save');
   const navigationRef =
     createNavigationContainerRef<GameplayDrawerParamList>();
   let tree!: Renderer.ReactTestRenderer;
@@ -40,8 +41,22 @@ test('unmounts completed video and returns Scenarios to Home', async () => {
   await act(() => tree.root.findByType(SimulationBriefing).props.onStart());
 
   const video = tree.root.findByType(Video);
+  expect(saveProgress).not.toHaveBeenCalled();
+
+  await act(() => video.props.onLoad({ duration: 97 }));
+  expect(saveProgress).toHaveBeenCalledWith(
+    expect.objectContaining({
+      durationSeconds: 97,
+      positionSeconds: 0,
+    }),
+  );
+  expect(
+    saveProgress.mock.calls.some(
+      ([progress]) => progress.durationSeconds === 0,
+    ),
+  ).toBe(false);
+
   await act(async () => {
-    video.props.onLoad({ duration: 97 });
     await video.props.onEnd();
   });
 

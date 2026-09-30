@@ -84,6 +84,10 @@ function ScenarioVideoSession({
   }, [flushProgress]);
 
   useEffect(() => {
+    if (durationRef.current <= 0) {
+      return;
+    }
+
     recordProgress(
       currentTimeRef.current,
       durationRef.current,
@@ -93,23 +97,31 @@ function ScenarioVideoSession({
   }, [decisionPlayback.answers, flushProgress, recordProgress]);
 
   const handleLoad = (data: OnLoadData) => {
-    durationRef.current = data.duration;
-
-    if (hasRestoredPositionRef.current || !initialProgress) {
+    if (data.duration <= 0) {
       return;
     }
 
-    hasRestoredPositionRef.current = true;
-    const latestSafePosition = Math.max(0, data.duration - 1);
-    const resumePosition = Math.min(
-      initialProgress.positionSeconds,
-      latestSafePosition,
-    );
-    currentTimeRef.current = resumePosition;
+    durationRef.current = data.duration;
 
-    if (resumePosition > 0) {
-      videoRef.current?.seek(resumePosition);
+    if (!hasRestoredPositionRef.current && initialProgress) {
+      hasRestoredPositionRef.current = true;
+      const latestSafePosition = Math.max(0, data.duration - 1);
+      const resumePosition = Math.min(
+        initialProgress.positionSeconds,
+        latestSafePosition,
+      );
+      currentTimeRef.current = resumePosition;
+
+      if (resumePosition > 0) {
+        videoRef.current?.seek(resumePosition);
+      }
     }
+
+    recordProgress(
+      currentTimeRef.current,
+      data.duration,
+      decisionPlayback.answers,
+    );
   };
 
   const handleProgress = (data: OnProgressData) => {
