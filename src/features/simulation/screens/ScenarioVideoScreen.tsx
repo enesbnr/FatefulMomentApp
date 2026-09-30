@@ -64,6 +64,7 @@ function ScenarioVideoSession({
   const currentTimeRef = useRef(initialProgress?.positionSeconds ?? 0);
   const durationRef = useRef(initialProgress?.durationSeconds ?? 0);
   const hasRestoredPositionRef = useRef(false);
+  const isEndingRef = useRef(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const screenActive = isFocused && appState === 'active';
   const decisionPlayback = useDecisionPlayback({
@@ -127,6 +128,11 @@ function ScenarioVideoSession({
   };
 
   const handleEnd = async () => {
+    if (isEndingRef.current) {
+      return;
+    }
+    isEndingRef.current = true;
+
     await markCompleted(
       currentTimeRef.current,
       durationRef.current,

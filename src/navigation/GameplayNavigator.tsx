@@ -42,6 +42,7 @@ export default function GameplayNavigator() {
           name="Scenarios"
           component={ScenarioNavigator}
           options={({ route }) => ({
+            popToTopOnBlur: true,
             swipeEnabled:
               getFocusedRouteNameFromRoute(route) !== 'ScenarioVideo',
           })}
