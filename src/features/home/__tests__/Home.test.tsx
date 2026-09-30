@@ -29,9 +29,9 @@ test('selection assigns at most one video and retains dimmed cards', async () =>
     expect(list.props.getItemLayout(items, 2).offset).toBe(472);
     expect(tree.root.findAllByType(Video)).toHaveLength(0);
     const card = (index: number) => list.props.renderItem({ item: items[index] });
-    await act(() => card(0).props.onSelect());
+    await act(() => card(0).props.onSelect(items[0].id));
     expect(tree.root.findAllByType(Video)).toHaveLength(1);
-    await act(() => card(1).props.onSelect());
+    await act(() => card(1).props.onSelect(items[1].id));
     expect(tree.root.findAllByType(Video)).toHaveLength(1);
     const dimmedCards = tree.root.findAllByType(View).filter(view => StyleSheet.flatten(view.props.style)?.opacity === 0.35);
     expect(dimmedCards.length).toBeGreaterThan(0);
@@ -53,10 +53,10 @@ test('only the card Start button requests Simulation navigation', async () => {
 
   const list = tree.root.findByType(FlatList);
   const firstCard = list.props.renderItem({ item: list.props.data[0] });
-  await act(() => firstCard.props.onSelect());
+  await act(() => firstCard.props.onSelect(list.props.data[0].id));
   expect(onScenarioStart).not.toHaveBeenCalled();
 
-  await act(() => firstCard.props.onStart());
+  await act(() => firstCard.props.onStart(list.props.data[0].id));
   expect(onScenarioStart).toHaveBeenCalledWith('scenario-1');
 
   await act(() => tree.unmount());

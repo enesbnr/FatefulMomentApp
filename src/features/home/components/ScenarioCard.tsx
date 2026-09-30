@@ -17,15 +17,15 @@ function ScenarioCard({
   scenario: HomeScenario;
   active: boolean;
   dimmed: boolean;
-  onSelect: () => void;
-  onStart: () => void;
+  onSelect: (id: string) => void;
+  onStart?: (id: string) => void;
 }) {
   const gradientId = useId();
   return (
     <Pressable
   onPress={event => {
     event.stopPropagation();
-    onSelect();
+    onSelect(scenario.id);
   }}
   style={[
   styles.card,
@@ -51,7 +51,7 @@ function ScenarioCard({
             accessibilityLabel={`Start ${scenario.title}`}
             onPress={event => {
               event.stopPropagation();
-              onStart();
+              onStart?.(scenario.id);
             }}
             style={styles.start}
           >

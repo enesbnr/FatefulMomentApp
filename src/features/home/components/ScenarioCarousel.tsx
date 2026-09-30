@@ -1,4 +1,10 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { useCallback } from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  type ListRenderItem,
+} from 'react-native';
 import { scenarioCardLayout } from '../scenarioCard.constants';
 import ScenarioCard from './ScenarioCard';
 import type { HomeScenario } from '../types';
@@ -6,6 +12,14 @@ import type { HomeScenario } from '../types';
 function Separator() {
   return <View style={styles.separator} />;
 }
+
+const keyExtractor = (item: HomeScenario) => item.id;
+
+const getItemLayout = (_: ArrayLike<HomeScenario> | null | undefined, index: number) => ({
+  length: scenarioCardLayout.width + scenarioCardLayout.gap,
+  offset: (scenarioCardLayout.width + scenarioCardLayout.gap) * index,
+  index,
+});
 
 export default function ScenarioCarousel({
   scenarios,
@@ -22,32 +36,33 @@ export default function ScenarioCarousel({
   onSelectScenario: (id: string) => void;
   onStartScenario?: (id: string) => void;
 }) {
+  const renderItem = useCallback<ListRenderItem<HomeScenario>>(
+    ({ item }) => {
+      const isSelected = item.id === selectedScenarioId;
+      const shouldDim = selectedScenarioId !== null && !isSelected;
+
+      return (
+        <ScenarioCard
+          scenario={item}
+          active={isSelected}
+          dimmed={item.dimmed || shouldDim}
+          onSelect={onSelectScenario}
+          onStart={onStartScenario}
+        />
+      );
+    },
+    [onSelectScenario, onStartScenario, selectedScenarioId],
+  );
+
   return (
     <FlatList
       horizontal
       data={scenarios}
       extraData={selectedScenarioId}
-      keyExtractor={item => item.id}
-      renderItem={({ item }) => {
-  const isSelected = item.id === selectedScenarioId;
-  const shouldDim = selectedScenarioId !== null && !isSelected;
-
-  return (
-    <ScenarioCard
-      scenario={item}
-      active={isSelected}
-      dimmed={item.dimmed || shouldDim}
-      onSelect={() => onSelectScenario(item.id)}
-      onStart={() => onStartScenario?.(item.id)}
-    />
-  );
-}}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
       ItemSeparatorComponent={Separator}
-      getItemLayout={(_, index) => ({
-        length: scenarioCardLayout.width + scenarioCardLayout.gap,
-        offset: (scenarioCardLayout.width + scenarioCardLayout.gap) * index,
-        index,
-      })}
+      getItemLayout={getItemLayout}
       initialNumToRender={4}
       maxToRenderPerBatch={4}
       windowSize={3}
