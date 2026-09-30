@@ -40,7 +40,10 @@ export default function useDecisionPlayback({
   }, []);
 
   const completeDecision = useCallback(
-    (decision: ScenarioDecision, optionId: DecisionOption['id']) => {
+    (
+      decision: ScenarioDecision,
+      optionId: DecisionOption['id'] | null,
+    ) => {
       completedDecisionIds.current.add(decision.id);
       setAnswers(currentAnswers => [
         ...currentAnswers.filter(answer => answer.decisionId !== decision.id),
@@ -126,6 +129,9 @@ export default function useDecisionPlayback({
       if (userChoiceId) {
         setPhase('locked');
         updatePhaseRemainingMs(activeDecision.feedbackTiming.lockedMs);
+      } else {
+        setPhase('revealed');
+        updatePhaseRemainingMs(activeDecision.feedbackTiming.revealedMs);
       }
       return;
     }
@@ -136,9 +142,7 @@ export default function useDecisionPlayback({
       return;
     }
 
-    if (userChoiceId) {
-      completeDecision(activeDecision, userChoiceId);
-    }
+    completeDecision(activeDecision, userChoiceId ?? null);
   }, [
     activeDecision,
     completeDecision,

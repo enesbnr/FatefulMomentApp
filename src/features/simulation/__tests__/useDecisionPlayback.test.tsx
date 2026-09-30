@@ -10,7 +10,7 @@ function HookHarness({
   initialAnswers,
 }: {
   onChange: (state: PlaybackState) => void;
-  initialAnswers?: { decisionId: string; optionId: string }[];
+  initialAnswers?: { decisionId: string; optionId: string | null }[];
 }) {
   const state = useDecisionPlayback({
     decisions: [decisionFixture],
@@ -67,7 +67,7 @@ describe('useDecisionPlayback', () => {
     await act(() => tree.unmount());
   });
 
-  test('keeps the decision open at zero until the user selects', async () => {
+  test('reveals the historical choice and completes with zero effects on timeout', async () => {
     let latest!: PlaybackState;
     let tree!: Renderer.ReactTestRenderer;
 
@@ -85,22 +85,42 @@ describe('useDecisionPlayback', () => {
     await act(() => jest.advanceTimersByTime(decisionFixture.durationMs));
 
     expect(latest.activeDecision?.id).toBe(decisionFixture.id);
-    expect(latest.progress).toBe(0);
-    expect(latest.urgent).toBe(true);
-
-    await act(() => latest.handleSelectOption('option-3'));
-    expect(latest.phase).toBe('locked');
-
-    await act(() =>
-      jest.advanceTimersByTime(decisionFixture.feedbackTiming.lockedMs + 100),
-    );
     expect(latest.phase).toBe('revealed');
+    expect(latest.userChoiceId).toBeUndefined();
+    expect(latest.progress).toBe(0);
+    expect(latest.urgent).toBe(false);
 
     await act(() =>
       jest.advanceTimersByTime(decisionFixture.feedbackTiming.revealedMs + 100),
     );
     expect(latest.activeDecision).toBeUndefined();
-    expect(latest.answers[0].optionId).toBe('option-3');
+    expect(latest.answers).toEqual([
+      { decisionId: decisionFixture.id, optionId: null },
+    ]);
+
+    await act(() => tree.unmount());
+  });
+
+  test('does not reopen a restored unanswered decision', async () => {
+    let latest!: PlaybackState;
+    let tree!: Renderer.ReactTestRenderer;
+
+    await act(() => {
+      tree = Renderer.create(
+        <HookHarness
+          initialAnswers={[
+            { decisionId: decisionFixture.id, optionId: null },
+          ]}
+          onChange={state => {
+            latest = state;
+          }}
+        />,
+      );
+    });
+
+    await act(() => latest.handleProgress(30));
+    expect(latest.activeDecision).toBeUndefined();
+    expect(latest.answers[0].optionId).toBeNull();
 
     await act(() => tree.unmount());
   });

@@ -5,7 +5,7 @@ import type {
 
 export type DecisionAnswer = {
   decisionId: ScenarioDecision['id'];
-  optionId: DecisionOption['id'];
+  optionId: DecisionOption['id'] | null;
 };
 
 export type ScenarioProgressStatus = 'in_progress' | 'completed';

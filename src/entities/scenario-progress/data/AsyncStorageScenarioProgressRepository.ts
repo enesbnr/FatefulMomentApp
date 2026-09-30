@@ -28,7 +28,7 @@ const isScenarioProgress = (value: unknown): value is ScenarioProgress => {
         Boolean(answer) &&
         typeof answer === 'object' &&
         typeof answer.decisionId === 'string' &&
-        typeof answer.optionId === 'string',
+        (typeof answer.optionId === 'string' || answer.optionId === null),
     ) &&
     (progress.status === 'in_progress' || progress.status === 'completed') &&
     typeof progress.updatedAt === 'number'
