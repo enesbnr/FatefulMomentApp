@@ -14,7 +14,7 @@ export default function HomeScreen({
   onScenarioStart,
   visualState = HOME_DEMO_STATE,
 }: {
-  onBack: () => void;
+  onBack?: () => void;
   onScenarioStart?: (scenarioId: string) => void;
   visualState?: HomeVisualState;
 }) {

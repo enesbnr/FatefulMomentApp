@@ -12,7 +12,7 @@ import EmailSignInScreen from '../../features/auth/EmailSignInScreen';
 import AuthButton from '../../features/auth/components/AuthButton';
 import HomeScreen from '../../features/home/HomeScreen';
 
-test('demo credentials enter Home and returning restores portrait auth', async () => {
+test('demo credentials enter Home and auth cannot be reached by going back', async () => {
   let tree!: Renderer.ReactTestRenderer;
   await act(() => {
     tree = Renderer.create(<App />);
@@ -36,9 +36,10 @@ test('demo credentials enter Home and returning restores portrait auth', async (
   expect(Orientation.lockToLandscape).toHaveBeenCalled();
 
   jest.mocked(Orientation.lockToPortrait).mockClear();
-  await act(() => home.props.onBack());
-  expect(tree.root.findByType(EmailSignInScreen)).toBeDefined();
-  expect(Orientation.lockToPortrait).toHaveBeenCalled();
+  await act(() => home.props.onBack?.());
+  expect(tree.root.findAllByType(EmailSignInScreen)).toHaveLength(0);
+  expect(tree.root.findByType(HomeScreen)).toBeDefined();
+  expect(Orientation.lockToPortrait).not.toHaveBeenCalled();
 
   await act(() => tree.unmount());
 });

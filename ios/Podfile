@@ -30,10 +30,14 @@ target 'FatefulMomentApp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
-    # RNSVG's filter resource bundle otherwise targets iOS 12.4, which
-    # the installed Xcode simulator SDK no longer supports.
+    # These resource bundles otherwise target iOS versions that the installed
+    # Xcode simulator SDK no longer supports.
+    minimum_target_resource_pods = [
+      'AsyncStorage-AsyncStorage_resources',
+      'RNSVG-RNSVGFilters',
+    ]
     installer.pods_project.targets.each do |target|
-      next unless target.name == 'RNSVG-RNSVGFilters'
+      next unless minimum_target_resource_pods.include?(target.name)
       target.build_configurations.each do |configuration|
         configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
       end

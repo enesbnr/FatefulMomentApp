@@ -1,4 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
+import type { DrawerScreenProps } from '@react-navigation/drawer';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type AuthStackParamList = {
@@ -15,9 +16,14 @@ export type GameplayStackParamList = {
   ScenarioVideo: { scenarioId: string };
 };
 
+export type GameplayDrawerParamList = {
+  Scenarios: NavigatorScreenParams<GameplayStackParamList> | undefined;
+  DNAResult: { scenarioId?: string } | undefined;
+};
+
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
-  Gameplay: NavigatorScreenParams<GameplayStackParamList> | undefined;
+  Gameplay: NavigatorScreenParams<GameplayDrawerParamList> | undefined;
 };
 
 export type AuthScreenProps<RouteName extends keyof AuthStackParamList> =
@@ -26,6 +32,10 @@ export type AuthScreenProps<RouteName extends keyof AuthStackParamList> =
 export type GameplayScreenProps<
   RouteName extends keyof GameplayStackParamList,
 > = NativeStackScreenProps<GameplayStackParamList, RouteName>;
+
+export type GameplayDrawerScreenProps<
+  RouteName extends keyof GameplayDrawerParamList,
+> = DrawerScreenProps<GameplayDrawerParamList, RouteName>;
 
 declare global {
   namespace ReactNavigation {

@@ -13,19 +13,26 @@ const TIMER_INTERVAL_MS = 100;
 type Options = {
   decisions: ScenarioDecision[];
   timerRunning: boolean;
+  initialAnswers?: DecisionAnswer[];
 };
 
 export default function useDecisionPlayback({
   decisions,
   timerRunning,
+  initialAnswers = [],
 }: Options) {
-  const completedDecisionIds = useRef(new Set<string>());
+  const initialAnswersRef = useRef(initialAnswers);
+  const completedDecisionIds = useRef(
+    new Set(initialAnswersRef.current.map(answer => answer.decisionId)),
+  );
   const phaseRemainingMsRef = useRef(0);
   const [activeDecision, setActiveDecision] = useState<ScenarioDecision>();
   const [phase, setPhase] = useState<DecisionPhase>('choosing');
   const [userChoiceId, setUserChoiceId] = useState<DecisionOption['id']>();
   const [phaseRemainingMs, setPhaseRemainingMs] = useState(0);
-  const [answers, setAnswers] = useState<DecisionAnswer[]>([]);
+  const [answers, setAnswers] = useState<DecisionAnswer[]>(
+    initialAnswersRef.current,
+  );
 
   const updatePhaseRemainingMs = useCallback((value: number) => {
     phaseRemainingMsRef.current = value;

@@ -56,6 +56,16 @@ test('email flow keeps password masked, gates submission, and returns to landing
   expect(tree.root.findAllByType(TextInput)).toHaveLength(0);
   expect(tree.root.findAllByType(AuthButton)).toHaveLength(3);
   await act(() => {
+    tree.root
+      .findAllByType(AuthButton)
+      .find(button => button.props.label === 'Continue with Email')!
+      .props.onPress();
+  });
+  expect(
+    tree.root.findByType(EmailSignInScreen).findAllByType(TextInput)
+      .map(input => input.props.value),
+  ).toEqual(['', '']);
+  await act(() => {
     tree.unmount();
   });
 });

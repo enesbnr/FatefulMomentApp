@@ -1,97 +1,168 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Fateful Moment
 
-# Getting Started
+Fateful Moment, kullanıcının tarihsel senaryoları deneyimlediği, video sırasında süreli kararlar verdiği ve seçimlerinin sonucunda bir DNA profili oluşturduğu React Native uygulamasıdır.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+Proje React Native CLI ile geliştirilir ve iOS ile Android platformlarını destekler.
 
-## Step 1: Start Metro
+## Uygulama akışı
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+```text
+Auth → Home → Simulation Briefing → Scenario Video → DNA Result
+                                      └─ Süreli kararlar
+```
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **Auth:** Giriş ve kayıt akışlarını yönetir.
+- **Home:** Senaryoları yatay ve sanallaştırılmış bir listede gösterir.
+- **Simulation Briefing:** Seçilen senaryonun başlığını, açıklamasını ve başlangıç aksiyonunu sunar.
+- **Scenario Video:** Videoyu oynatır ve senaryo verisinde belirtilen zamanlarda karar katmanını açar.
+- **DNA Result:** Kullanıcının kararlarından oluşan sonucu gösterir.
+
+## Mimari yaklaşım
+
+Kod tabanı feature-first yapıda düzenlenmiştir. Bir kullanıcı davranışına ait ekranlar, hook'lar, bileşenler ve testler aynı feature altında tutulur. Ortak domain modelleri `entities`, uygulama seviyesindeki provider'lar `app`, genel tema değerleri `theme`, navigasyon yapısı ise `navigation` altında bulunur.
+
+```text
+src/
+├── app/                 # Uygulama seviyesindeki provider'lar
+├── entities/            # Scenario ve scenario progress domain modelleri
+├── features/
+│   ├── auth/
+│   ├── home/
+│   ├── simulation/
+│   └── dna-result/
+├── navigation/          # Typed route ve drawer/stack navigasyonu
+├── shared/              # Feature bağımsız ortak bileşenler
+└── theme/               # Renk, ölçü ve tipografi sabitleri
+```
+
+Bu düzen, bir özelliğin ilgili parçalarını birbirine yakın tutar. Ortak kod yalnızca gerçekten birden fazla feature tarafından kullanıldığında `shared` veya `entities` katmanına taşınır.
+
+## Senaryo verisi
+
+Senaryo ekranlarının kullandığı içerik tek bir scenario modeli üzerinden taşınır. Home kartı, briefing ekranı, video kaynağı, karar zamanları ve DNA sonucu aynı `scenarioId` ile ilişkilendirilir.
+
+Route parametreleri typed olarak tanımlanmıştır. Yeni bir route parametresi eklendiğinde TypeScript, güncellenmesi gereken kullanım noktalarını derleme aşamasında gösterir.
+
+## Video karar sistemi
+
+Kararlar scenario verisinde tanımlanan zamanlara göre açılır. Her karar şunları içerir:
+
+- videoda açılacağı zaman,
+- karar verme süresi,
+- acil durum görünümünün başlayacağı eşik,
+- seçenekler ve seçeneklerin DNA etkileri.
+
+Karar katmanı video ekranının üzerinde gösterilir. Karar açıldığında video durur; seçim tamamlandıktan sonra aynı video devam eder. Böylece video ayrı ekranlara bölünmeden tek playback oturumu korunur.
+
+## Video resume ve ilerleme kaydı
+
+Video ilerlemesi `scenarioId` bazında cihazda saklanır. Kayıt şu bilgileri içerir:
+
+- videoda kalınan saniye,
+- video süresi,
+- tamamlanan kararlar,
+- verilen cevaplar,
+- senaryonun devam ediyor veya tamamlanmış olma durumu.
+
+Uygulama aynı senaryoya tekrar girdiğinde video kaydedilen konuma gider. Tamamlanmış kararlar yeniden gösterilmez. Kullanıcı aktif bir karar sırasında çıkmışsa ilgili karar tekrar açılır ve karar süresi baştan başlar. Video tamamlandığında kayıt `completed` olarak işaretlenir ve DNA sonucuna geçilir.
+
+İlerleme verisi doğrudan ekran bileşeninden AsyncStorage'a yazılmaz. Erişim aşağıdaki repository sözleşmesi üzerinden yapılır:
+
+```text
+ScenarioVideoScreen
+  → useScenarioResume
+    → ScenarioProgressRepository
+      → AsyncStorageScenarioProgressRepository
+```
+
+Bu sınır sayesinde ileride API eklendiğinde ekran ve playback mantığını değiştirmeden yeni bir repository implementasyonu kullanılabilir. Testlerde aynı sözleşmenin bellek içi implementasyonu kullanılır.
+
+Otomatik ilerleme kayıtları gereksiz disk yazımını azaltmak için aralıklı yapılır. Uygulama arka plana geçtiğinde, kullanıcı geri çıktığında ve cevap değiştiğinde bekleyen veri ayrıca kaydedilir.
+
+## Medya yönetimi
+
+Home carousel'i yatay `FlatList` kullanır. Uzakta kalan kartlar sanallaştırılır. Aynı anda bütün senaryolar için video player oluşturulmaz; yalnızca aktif kart video bileşenini bağlayabilir, diğer kartlar poster görseli gösterir.
+
+Senaryo videosu için `react-native-video`, yerel ilerleme kaydı için `@react-native-async-storage/async-storage` kullanılır.
+
+## Kurulum
+
+Gereksinimler:
+
+- Node.js
+- npm
+- iOS için Xcode ve CocoaPods
+- Android için Android Studio ve Android SDK
+
+Bağımlılıkları yükleyin:
 
 ```sh
-# Using npm
+npm install
+```
+
+iOS podlarını yükleyin:
+
+```sh
+cd ios
+pod install
+cd ..
+```
+
+Native bir bağımlılık eklendiğinde yalnızca Metro reload yeterli değildir; uygulama yeniden build edilmelidir.
+
+## Çalıştırma
+
+Metro:
+
+```sh
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+iOS:
 
 ```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+Android:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm run android
+```
 
-## Step 3: Modify your app
+Metro'nun `8081` portu zaten kullanılıyorsa ikinci bir Metro başlatmak yerine çalışan süreci kullanın.
 
-Now that you have successfully run the app, let's make changes!
+## Doğrulama
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+```sh
+npx tsc --noEmit
+npm run lint
+npm test -- --runInBand
+```
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+Native build doğrulaması:
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+```sh
+cd android
+./gradlew assembleDebug
+```
 
-## Congratulations! :tada:
+```sh
+cd ios
+xcodebuild \
+  -workspace FatefulMomentApp.xcworkspace \
+  -scheme FatefulMomentApp \
+  -configuration Debug \
+  -sdk iphonesimulator \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+## Test hesabı
 
-### Now what?
+Yerel geliştirme akışında kullanılabilen test hesabı:
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```text
+E-posta: test@test.com
+Şifre:   ABcd1234
+```

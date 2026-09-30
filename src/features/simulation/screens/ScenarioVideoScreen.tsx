@@ -1,38 +1,147 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, Pressable, StyleSheet, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Video, { type OnProgressData } from 'react-native-video';
+import Video, {
+  type OnLoadData,
+  type OnProgressData,
+  type VideoRef,
+} from 'react-native-video';
 import ArrowLeft from '../../../../assets/simulation/video/arrow-left.svg';
+import type { ScenarioProgress } from '../../../entities/scenario-progress/model/types';
+import type { Scenario } from '../../../entities/scenario/model/types';
 import { getScenarioById } from '../../../entities/scenario/selectors/scenarioSelectors';
-import type { GameplayScreenProps } from '../../../navigation/types';
+import type {
+  GameplayDrawerParamList,
+  GameplayScreenProps,
+} from '../../../navigation/types';
 import { appColors } from '../../../theme/colors';
 import DecisionOverlay from '../components/decision/DecisionOverlay';
 import useDecisionPlayback from '../hooks/useDecisionPlayback';
+import useScenarioResume from '../hooks/useScenarioResume';
 
-export default function ScenarioVideoScreen({
+type ScreenProps = GameplayScreenProps<'ScenarioVideo'>;
+
+export default function ScenarioVideoScreen({ navigation, route }: ScreenProps) {
+  const scenario = getScenarioById(route.params.scenarioId);
+  const resume = useScenarioResume(route.params.scenarioId);
+
+  if (resume.loading || !scenario) {
+    return <View style={styles.screen} testID="scenario-video-loading" />;
+  }
+
+  return (
+    <ScenarioVideoSession
+      navigation={navigation}
+      scenario={scenario}
+      initialProgress={resume.resumableProgress}
+      recordProgress={resume.recordProgress}
+      flushProgress={resume.flush}
+      markCompleted={resume.markCompleted}
+    />
+  );
+}
+
+function ScenarioVideoSession({
   navigation,
-  route,
-}: GameplayScreenProps<'ScenarioVideo'>) {
+  scenario,
+  initialProgress,
+  recordProgress,
+  flushProgress,
+  markCompleted,
+}: {
+  navigation: ScreenProps['navigation'];
+  scenario: Scenario;
+  initialProgress: ScenarioProgress | null;
+  recordProgress: ReturnType<typeof useScenarioResume>['recordProgress'];
+  flushProgress: ReturnType<typeof useScenarioResume>['flush'];
+  markCompleted: ReturnType<typeof useScenarioResume>['markCompleted'];
+}) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
+  const videoRef = useRef<VideoRef>(null);
+  const currentTimeRef = useRef(initialProgress?.positionSeconds ?? 0);
+  const durationRef = useRef(initialProgress?.durationSeconds ?? 0);
+  const hasRestoredPositionRef = useRef(false);
   const [appState, setAppState] = useState(AppState.currentState);
-  const scenario = getScenarioById(route.params.scenarioId);
   const screenActive = isFocused && appState === 'active';
   const decisionPlayback = useDecisionPlayback({
-    decisions: scenario?.decisions ?? [],
+    decisions: scenario.decisions,
     timerRunning: screenActive,
+    initialAnswers: initialProgress?.answers,
   });
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', setAppState);
+    const subscription = AppState.addEventListener('change', nextState => {
+      setAppState(nextState);
+      if (nextState !== 'active') {
+        flushProgress().catch(() => undefined);
+      }
+    });
     return () => subscription.remove();
-  }, []);
+  }, [flushProgress]);
+
+  useEffect(() => {
+    recordProgress(
+      currentTimeRef.current,
+      durationRef.current,
+      decisionPlayback.answers,
+    );
+    flushProgress().catch(() => undefined);
+  }, [decisionPlayback.answers, flushProgress, recordProgress]);
+
+  const handleLoad = (data: OnLoadData) => {
+    durationRef.current = data.duration;
+
+    if (hasRestoredPositionRef.current || !initialProgress) {
+      return;
+    }
+
+    hasRestoredPositionRef.current = true;
+    const latestSafePosition = Math.max(0, data.duration - 1);
+    const resumePosition = Math.min(
+      initialProgress.positionSeconds,
+      latestSafePosition,
+    );
+    currentTimeRef.current = resumePosition;
+
+    if (resumePosition > 0) {
+      videoRef.current?.seek(resumePosition);
+    }
+  };
+
+  const handleProgress = (data: OnProgressData) => {
+    currentTimeRef.current = data.currentTime;
+    decisionPlayback.handleProgress(data.currentTime);
+    recordProgress(
+      data.currentTime,
+      durationRef.current,
+      decisionPlayback.answers,
+    );
+  };
+
+  const handleBack = () => {
+    flushProgress().catch(() => undefined);
+    navigation.goBack();
+  };
+
+  const handleEnd = async () => {
+    await markCompleted(
+      currentTimeRef.current,
+      durationRef.current,
+      decisionPlayback.answers,
+    );
+    navigation
+      .getParent<DrawerNavigationProp<GameplayDrawerParamList>>()
+      ?.navigate('DNAResult', { scenarioId: scenario.id });
+  };
 
   return (
-    <View style={styles.screen} onAccessibilityEscape={navigation.goBack}>
-      {scenario?.simulation.video ? (
+    <View style={styles.screen} onAccessibilityEscape={handleBack}>
+      {scenario.simulation.video ? (
         <Video
+          ref={videoRef}
           source={scenario.simulation.video}
           style={styles.video}
           resizeMode="cover"
@@ -43,9 +152,9 @@ export default function ScenarioVideoScreen({
           playInBackground={false}
           playWhenInactive={false}
           progressUpdateInterval={100}
-          onProgress={(data: OnProgressData) =>
-            decisionPlayback.handleProgress(data.currentTime)
-          }
+          onLoad={handleLoad}
+          onProgress={handleProgress}
+          onEnd={handleEnd}
         />
       ) : null}
       {decisionPlayback.activeDecision ? (
@@ -63,7 +172,7 @@ export default function ScenarioVideoScreen({
         accessibilityRole="button"
         accessibilityLabel="Back"
         hitSlop={8}
-        onPress={navigation.goBack}
+        onPress={handleBack}
         style={[
           styles.backButton,
           {

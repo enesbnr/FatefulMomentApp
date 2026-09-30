@@ -7,12 +7,15 @@ type PlaybackState = ReturnType<typeof useDecisionPlayback>;
 
 function HookHarness({
   onChange,
+  initialAnswers,
 }: {
   onChange: (state: PlaybackState) => void;
+  initialAnswers?: { decisionId: string; optionId: string }[];
 }) {
   const state = useDecisionPlayback({
     decisions: [decisionFixture],
     timerRunning: true,
+    initialAnswers,
   });
 
   useEffect(() => onChange(state), [onChange, state]);
@@ -98,6 +101,30 @@ describe('useDecisionPlayback', () => {
     );
     expect(latest.activeDecision).toBeUndefined();
     expect(latest.answers[0].optionId).toBe('option-3');
+
+    await act(() => tree.unmount());
+  });
+
+  test('does not reopen a decision restored as completed', async () => {
+    let latest!: PlaybackState;
+    let tree!: Renderer.ReactTestRenderer;
+
+    await act(() => {
+      tree = Renderer.create(
+        <HookHarness
+          initialAnswers={[
+            { decisionId: decisionFixture.id, optionId: 'option-2' },
+          ]}
+          onChange={state => {
+            latest = state;
+          }}
+        />,
+      );
+    });
+
+    await act(() => latest.handleProgress(30));
+    expect(latest.activeDecision).toBeUndefined();
+    expect(latest.answers[0].optionId).toBe('option-2');
 
     await act(() => tree.unmount());
   });

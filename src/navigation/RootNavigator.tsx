@@ -25,17 +25,20 @@ export default function RootNavigator() {
               <AuthNavigator
                 account={account}
                 onAccountCreated={setAccount}
-                onAuthenticated={() => navigation.navigate('Gameplay')}
+                onAuthenticated={() =>
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Gameplay' }],
+                  })
+                }
               />
             </AuthOrientationBoundary>
           )}
         </Stack.Screen>
-        <Stack.Screen name="Gameplay">
-          {({ navigation }) => (
+        <Stack.Screen name="Gameplay" options={{ gestureEnabled: false }}>
+          {() => (
             <GameplayOrientationBoundary>
-              <GameplayNavigator
-                onExit={() => navigation.goBack()}
-              />
+              <GameplayNavigator />
             </GameplayOrientationBoundary>
           )}
         </Stack.Screen>
