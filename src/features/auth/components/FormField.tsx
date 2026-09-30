@@ -1,6 +1,5 @@
 import {
   forwardRef,
-  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -18,7 +17,11 @@ import {
 import { colors, layout } from '../../../theme/authLanding';
 import { emailTypography, fieldColors } from '../../../theme/emailSignIn';
 
-type FormFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
+type FormFieldProps = Omit<
+  TextInputProps,
+  'style' | 'placeholderTextColor' | 'value'
+> & {
+  value: string;
   leading?: ReactNode;
   trailing?: ReactNode;
   errorMessage?: string;
@@ -41,13 +44,7 @@ const FormField = forwardRef<ComponentRef<typeof TextInput>, FormFieldProps>(
   ) {
     const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
     const [focused, setFocused] = useState(false);
-    const [filled, setFilled] = useState((value?.length ?? 0) > 0);
-
-    useEffect(() => {
-      setFilled((value?.length ?? 0) > 0);
-    }, [value]);
-
-    const active = focused || filled;
+    const active = focused || value.length > 0;
     return (
       <View style={styles.field}>
         <Pressable
@@ -86,10 +83,7 @@ const FormField = forwardRef<ComponentRef<typeof TextInput>, FormFieldProps>(
               setFocused(false);
               onBlur?.(event);
             }}
-            onChangeText={text => {
-              setFilled(text.length > 0);
-              onChangeText?.(text);
-            }}
+            onChangeText={onChangeText}
           />
           {trailing}
         </Pressable>
