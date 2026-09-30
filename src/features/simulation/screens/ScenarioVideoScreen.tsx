@@ -182,6 +182,8 @@ function ScenarioVideoSession({
           userChoiceId={decisionPlayback.userChoiceId}
           revealedOptionId={decisionPlayback.activeDecision.revealedOptionId}
           progress={decisionPlayback.progress}
+          countdownRemainingMs={decisionPlayback.countdownRemainingMs}
+          timerRunning={decisionPlayback.timerRunning}
           urgent={decisionPlayback.urgent}
           onSelectOption={decisionPlayback.handleSelectOption}
         />

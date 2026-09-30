@@ -12,6 +12,8 @@ type Props = {
   userChoiceId?: DecisionOption['id'];
   revealedOptionId?: DecisionOption['id'];
   progress: number;
+  countdownRemainingMs: number;
+  timerRunning: boolean;
   urgent: boolean;
   onSelectOption: (optionId: DecisionOption['id']) => void;
 };
@@ -22,6 +24,8 @@ export default function DecisionOverlay({
   userChoiceId,
   revealedOptionId,
   progress,
+  countdownRemainingMs,
+  timerRunning,
   urgent,
   onSelectOption,
 }: Props) {
@@ -39,7 +43,12 @@ export default function DecisionOverlay({
         />
       </View>
       {phase === 'choosing' ? (
-        <DecisionCountdown progress={progress} urgent={urgent} />
+        <DecisionCountdown
+          progress={progress}
+          remainingMs={countdownRemainingMs}
+          running={timerRunning}
+          urgent={urgent}
+        />
       ) : null}
     </View>
   );

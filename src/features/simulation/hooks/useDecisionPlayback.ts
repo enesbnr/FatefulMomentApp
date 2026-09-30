@@ -8,8 +8,6 @@ import type {
   DecisionPhase,
 } from '../model/decisionSessionTypes';
 
-const TIMER_INTERVAL_MS = 100;
-
 type Options = {
   decisions: ScenarioDecision[];
   timerRunning: boolean;
@@ -30,6 +28,7 @@ export default function useDecisionPlayback({
   const [phase, setPhase] = useState<DecisionPhase>('choosing');
   const [userChoiceId, setUserChoiceId] = useState<DecisionOption['id']>();
   const [phaseRemainingMs, setPhaseRemainingMs] = useState(0);
+  const [urgent, setUrgent] = useState(false);
   const [answers, setAnswers] = useState<DecisionAnswer[]>(
     initialAnswersRef.current,
   );
@@ -52,6 +51,7 @@ export default function useDecisionPlayback({
       setActiveDecision(undefined);
       setPhase('choosing');
       setUserChoiceId(undefined);
+      setUrgent(false);
       updatePhaseRemainingMs(0);
     },
     [updatePhaseRemainingMs],
@@ -76,6 +76,7 @@ export default function useDecisionPlayback({
 
       setPhase('choosing');
       setUserChoiceId(undefined);
+      setUrgent(nextDecision.durationMs <= nextDecision.urgentAtMs);
       updatePhaseRemainingMs(nextDecision.durationMs);
       setActiveDecision(nextDecision);
     },
@@ -107,18 +108,41 @@ export default function useDecisionPlayback({
       return;
     }
 
-    let lastTickAt = Date.now();
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const elapsedMs = now - lastTickAt;
-      lastTickAt = now;
-      updatePhaseRemainingMs(
-        Math.max(0, phaseRemainingMsRef.current - elapsedMs),
-      );
-    }, TIMER_INTERVAL_MS);
+    const startedAt = Date.now();
+    const startingRemainingMs = phaseRemainingMsRef.current;
+    const completionTimeout = setTimeout(
+      () => updatePhaseRemainingMs(0),
+      startingRemainingMs,
+    );
+    const urgentDelayMs =
+      phase === 'choosing'
+        ? startingRemainingMs - activeDecision.urgentAtMs
+        : -1;
+    const urgentTimeout =
+      urgentDelayMs > 0
+        ? setTimeout(() => {
+            phaseRemainingMsRef.current = activeDecision.urgentAtMs;
+            setUrgent(true);
+          }, urgentDelayMs)
+        : undefined;
 
-    return () => clearInterval(interval);
-  }, [activeDecision, phase, timerRunning, updatePhaseRemainingMs]);
+    return () => {
+      clearTimeout(completionTimeout);
+      if (urgentTimeout) {
+        clearTimeout(urgentTimeout);
+      }
+      phaseRemainingMsRef.current = Math.max(
+        0,
+        startingRemainingMs - (Date.now() - startedAt),
+      );
+    };
+  }, [
+    activeDecision,
+    phase,
+    phaseRemainingMs,
+    timerRunning,
+    updatePhaseRemainingMs,
+  ]);
 
   useEffect(() => {
     if (!activeDecision || phaseRemainingMs !== 0) {
@@ -162,10 +186,9 @@ export default function useDecisionPlayback({
     phase,
     userChoiceId,
     progress,
-    urgent:
-      activeDecision && phase === 'choosing'
-        ? phaseRemainingMs <= activeDecision.urgentAtMs
-        : false,
+    countdownRemainingMs: phaseRemainingMsRef.current,
+    timerRunning,
+    urgent: Boolean(activeDecision && phase === 'choosing' && urgent),
     answers,
     handleProgress,
     handleSelectOption,

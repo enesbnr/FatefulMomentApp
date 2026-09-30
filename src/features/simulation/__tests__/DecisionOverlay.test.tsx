@@ -17,6 +17,8 @@ test('renders decision options and reports a changed selection', async () => {
         userChoiceId="option-2"
         revealedOptionId={decisionFixture.revealedOptionId}
         progress={0.28}
+        countdownRemainingMs={4_200}
+        timerRunning
         urgent={false}
         onSelectOption={onSelectOption}
       />,
@@ -60,6 +62,8 @@ test('clamps countdown progress and displays the urgent state', async () => {
         options={decisionFixture.options}
         phase="choosing"
         progress={2}
+        countdownRemainingMs={decisionFixture.durationMs}
+        timerRunning
         urgent
         onSelectOption={jest.fn()}
       />,

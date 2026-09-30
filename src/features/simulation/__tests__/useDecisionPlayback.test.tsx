@@ -8,13 +8,15 @@ type PlaybackState = ReturnType<typeof useDecisionPlayback>;
 function HookHarness({
   onChange,
   initialAnswers,
+  timerRunning = true,
 }: {
   onChange: (state: PlaybackState) => void;
   initialAnswers?: { decisionId: string; optionId: string | null }[];
+  timerRunning?: boolean;
 }) {
   const state = useDecisionPlayback({
     decisions: [decisionFixture],
-    timerRunning: true,
+    timerRunning,
     initialAnswers,
   });
 
@@ -145,6 +147,41 @@ describe('useDecisionPlayback', () => {
     await act(() => latest.handleProgress(30));
     expect(latest.activeDecision).toBeUndefined();
     expect(latest.answers[0].optionId).toBe('option-2');
+
+    await act(() => tree.unmount());
+  });
+
+  test('pauses the deadline while inactive and enters urgent state at its boundary', async () => {
+    let latest!: PlaybackState;
+    let tree!: Renderer.ReactTestRenderer;
+    const onChange = (state: PlaybackState) => {
+      latest = state;
+    };
+
+    await act(() => {
+      tree = Renderer.create(<HookHarness onChange={onChange} />);
+    });
+    await act(() => latest.handleProgress(0));
+    await act(() => jest.advanceTimersByTime(5_000));
+
+    await act(() => {
+      tree.update(<HookHarness onChange={onChange} timerRunning={false} />);
+    });
+    await act(() => jest.advanceTimersByTime(20_000));
+    expect(latest.phase).toBe('choosing');
+    expect(latest.urgent).toBe(false);
+
+    await act(() => {
+      tree.update(<HookHarness onChange={onChange} timerRunning />);
+    });
+    await act(() => jest.advanceTimersByTime(5_999));
+    expect(latest.urgent).toBe(false);
+
+    await act(() => jest.advanceTimersByTime(1));
+    expect(latest.urgent).toBe(true);
+
+    await act(() => jest.advanceTimersByTime(4_000));
+    expect(latest.phase).toBe('revealed');
 
     await act(() => tree.unmount());
   });

@@ -1,15 +1,49 @@
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { decisionColors, decisionLayout } from './decision.constants';
 
 type Props = {
   progress: number;
+  remainingMs: number;
+  running: boolean;
   urgent: boolean;
 };
 
 const clampProgress = (progress: number) => Math.min(1, Math.max(0, progress));
 
-export default function DecisionCountdown({ progress, urgent }: Props) {
+export default function DecisionCountdown({
+  progress,
+  remainingMs,
+  running,
+  urgent,
+}: Props) {
   const normalizedProgress = clampProgress(progress);
+  const animatedProgress = useSharedValue(normalizedProgress);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: animatedProgress.value }],
+  }));
+
+  useEffect(() => {
+    if (!running) {
+      cancelAnimation(animatedProgress);
+      return;
+    }
+
+    animatedProgress.value = normalizedProgress;
+    animatedProgress.value = withTiming(0, {
+      duration: remainingMs,
+      easing: Easing.linear,
+    });
+
+    return () => cancelAnimation(animatedProgress);
+  }, [animatedProgress, normalizedProgress, remainingMs, running]);
 
   return (
     <View
@@ -23,15 +57,15 @@ export default function DecisionCountdown({ progress, urgent }: Props) {
       style={styles.track}
       testID="decision-countdown"
     >
-      <View
+      <Animated.View
         testID="decision-countdown-fill"
         style={[
           styles.fill,
+          animatedStyle,
           {
             backgroundColor: urgent
               ? decisionColors.countdownUrgent
               : decisionColors.countdownNormal,
-            width: `${normalizedProgress * 100}%`,
           },
         ]}
       />
@@ -52,6 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   fill: {
+    width: '100%',
     height: decisionLayout.countdownHeight,
     borderRadius: 999,
     shadowColor: decisionColors.selectedGradientCenter,
