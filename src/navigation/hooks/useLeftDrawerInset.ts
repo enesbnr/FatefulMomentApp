@@ -15,18 +15,25 @@ export type LandscapeObstructionSide = 'left' | 'right' | null;
 
 export function useLandscapeObstructionSide(): LandscapeObstructionSide {
   const insets = useSafeAreaInsets();
-  const [deviceOrientation, setDeviceOrientation] =
+  const [interfaceOrientation, setInterfaceOrientation] =
     useState<OrientationType | null>(null);
 
   useEffect(() => {
-    Orientation.getDeviceOrientation(setDeviceOrientation);
-    Orientation.addDeviceOrientationListener(setDeviceOrientation);
+    Orientation.getOrientation(setInterfaceOrientation);
+    Orientation.addOrientationListener(setInterfaceOrientation);
 
     return () => {
-      Orientation.removeDeviceOrientationListener(setDeviceOrientation);
+      Orientation.removeOrientationListener(setInterfaceOrientation);
     };
   }, []);
 
+  return resolveLandscapeObstructionSide(insets, interfaceOrientation);
+}
+
+export function resolveLandscapeObstructionSide(
+  insets: { left: number; right: number },
+  interfaceOrientation: OrientationType | null,
+): LandscapeObstructionSide {
   const obstructionIsClearlyOnLeft = insets.left > insets.right + 1;
   const obstructionIsClearlyOnRight = insets.right > insets.left + 1;
 
@@ -44,11 +51,11 @@ export function useLandscapeObstructionSide(): LandscapeObstructionSide {
     return null;
   }
 
-  if (deviceOrientation === 'LANDSCAPE-LEFT') {
+  if (interfaceOrientation === 'LANDSCAPE-LEFT') {
     return 'left';
   }
 
-  if (deviceOrientation === 'LANDSCAPE-RIGHT') {
+  if (interfaceOrientation === 'LANDSCAPE-RIGHT') {
     return 'right';
   }
 

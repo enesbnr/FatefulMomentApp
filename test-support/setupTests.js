@@ -42,6 +42,9 @@ jest.mock('react-native-keyboard-controller', () => {
 jest.mock('react-native-orientation-locker', () => ({
   lockToPortrait: jest.fn(),
   lockToLandscape: jest.fn(),
+  getOrientation: jest.fn(callback => callback('LANDSCAPE-RIGHT')),
+  addOrientationListener: jest.fn(),
+  removeOrientationListener: jest.fn(),
   getDeviceOrientation: jest.fn(callback => callback('LANDSCAPE-RIGHT')),
   addDeviceOrientationListener: jest.fn(),
   removeDeviceOrientationListener: jest.fn(),
