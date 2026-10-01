@@ -15,15 +15,55 @@ export default function useScenarioResume(scenarioId: string) {
   );
   const latestProgressRef = useRef<ScenarioProgress | null>(null);
   const lastPersistedAtRef = useRef(0);
-  const writeQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const activeProgressRef = useRef<ScenarioProgress | null>(null);
+  const pendingProgressRef = useRef<ScenarioProgress | null>(null);
+  const writeInFlightRef = useRef<Promise<void> | null>(null);
 
   const persist = useCallback(
     (progress: ScenarioProgress) => {
       lastPersistedAtRef.current = Date.now();
-      writeQueueRef.current = writeQueueRef.current
-        .catch(() => undefined)
-        .then(() => repository.save(progress));
-      return writeQueueRef.current;
+
+      if (
+        activeProgressRef.current === progress ||
+        pendingProgressRef.current === progress
+      ) {
+        return writeInFlightRef.current ?? Promise.resolve();
+      }
+
+      pendingProgressRef.current = progress;
+
+      if (writeInFlightRef.current) {
+        return writeInFlightRef.current;
+      }
+
+      const drainWrites = async () => {
+        let lastError: unknown;
+
+        while (pendingProgressRef.current) {
+          const nextProgress = pendingProgressRef.current;
+          pendingProgressRef.current = null;
+          activeProgressRef.current = nextProgress;
+
+          try {
+            await repository.save(nextProgress);
+            lastError = undefined;
+          } catch (error) {
+            lastError = error;
+          } finally {
+            activeProgressRef.current = null;
+          }
+        }
+
+        if (lastError) {
+          throw lastError;
+        }
+      };
+
+      writeInFlightRef.current = drainWrites().finally(() => {
+        writeInFlightRef.current = null;
+      });
+
+      return writeInFlightRef.current;
     },
     [repository],
   );
@@ -92,7 +132,7 @@ export default function useScenarioResume(scenarioId: string) {
     const latestProgress = latestProgressRef.current;
     return latestProgress?.status === 'in_progress'
       ? persist(latestProgress)
-      : writeQueueRef.current;
+      : (writeInFlightRef.current ?? Promise.resolve());
   }, [persist]);
 
   const markCompleted = useCallback(
