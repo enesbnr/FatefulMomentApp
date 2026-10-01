@@ -72,3 +72,45 @@ test('unmounts completed video and returns Scenarios to Home', async () => {
 
   await act(() => tree.unmount());
 });
+
+test('goes back through Video and Briefing without leaving stale screens mounted', async () => {
+  const repository = new MemoryScenarioProgressRepository();
+  const navigationRef =
+    createNavigationContainerRef<GameplayDrawerParamList>();
+  let tree!: Renderer.ReactTestRenderer;
+
+  await act(async () => {
+    tree = Renderer.create(
+      <ScenarioProgressProvider repository={repository}>
+        <NavigationContainer ref={navigationRef}>
+          <GameplayNavigator />
+        </NavigationContainer>
+      </ScenarioProgressProvider>,
+    );
+  });
+
+  await act(() => {
+    tree.root.findByType(HomeScreen).props.onScenarioStart('scenario-1');
+  });
+  expect(tree.root.findByType(SimulationBriefing)).toBeDefined();
+
+  await act(() => navigationRef.goBack());
+  expect(tree.root.findByType(HomeScreen)).toBeDefined();
+  expect(navigationRef.canGoBack()).toBe(false);
+
+  await act(() => {
+    tree.root.findByType(HomeScreen).props.onScenarioStart('scenario-1');
+  });
+  await act(() => tree.root.findByType(SimulationBriefing).props.onStart());
+  expect(tree.root.findByType(Video)).toBeDefined();
+
+  await act(() => navigationRef.goBack());
+  expect(tree.root.findByType(SimulationBriefing)).toBeDefined();
+  expect(tree.root.findAllByType(Video)).toHaveLength(0);
+
+  await act(() => navigationRef.goBack());
+  expect(tree.root.findByType(HomeScreen)).toBeDefined();
+  expect(navigationRef.canGoBack()).toBe(false);
+
+  await act(() => tree.unmount());
+});
