@@ -8,6 +8,20 @@ Auth → Home → Briefing → Scenario Video → DNA Result
 
 Proje React Native CLI ile geliştirilmiştir ve iOS ile Android'i destekler.
 
+## Tech Stack
+
+| Alan | Teknoloji |
+| --- | --- |
+| Mobil uygulama | React Native `0.87.1`, React `19.2.3`, TypeScript |
+| Navigation | React Navigation 7, Native Stack ve Drawer |
+| Yerel veri | AsyncStorage ve repository katmanı |
+| Medya | `react-native-video` |
+| Animasyon ve çizim | Reanimated ve React Native SVG |
+| Responsive yerleşim | Safe Area Context ve Orientation Locker |
+| Klavye yönetimi | React Native Keyboard Controller |
+| Test ve kalite | Jest, React Test Renderer, ESLint ve TypeScript compiler |
+| Native build | Android Gradle, Xcode ve CocoaPods |
+
 ## Kurulum
 
 ### Android APK kurulumu
@@ -87,6 +101,25 @@ npm test -- --runInBand
 ## Yaklaşım
 
 Kod tabanı feature-first yapıda düzenlenmiştir. Auth, Home, Simulation ve DNA Result akışlarının ekranları, hook'ları, bileşenleri ve testleri kendi feature klasörlerinde tutulur. Ortak domain modelleri `entities`, uygulama seviyesindeki provider'lar `app`, ortak arayüz parçaları `shared`, tema değerleri `theme` ve route tanımları `navigation` altında bulunur.
+
+### Dosya yapısı ve feature-first mimari
+
+```text
+src/
+├── app/          # Uygulama seviyesindeki provider'lar
+├── entities/     # Senaryo ve ilerleme modelleri, repository sözleşmeleri
+├── features/     # Kullanıcı akışlarına göre ayrılmış özellikler
+│   ├── auth/
+│   ├── home/
+│   ├── simulation/
+│   └── dna-result/
+├── navigation/   # Route tipleri, navigator'lar ve navigation lifecycle
+├── shared/       # Birden fazla feature'ın kullandığı bileşen, veri ve hook'lar
+├── theme/        # Ortak renk, tipografi ve yerleşim değerleri
+└── types/        # Uygulama genelindeki yardımcı tip tanımları
+```
+
+Her feature kendi ekranlarını, bileşenlerini, hook'larını, domain yardımcılarını ve testlerini birlikte tutar. Böylece bir akış üzerindeki değişiklikler tek klasörde izlenebilir ve başka feature'ların iç detaylarına bağımlılık azalır. Ekrandan bağımsız iş modelleri ile veri erişim sözleşmeleri `entities` altında kalır; gerçekten ortak kullanılan parçalar ise `shared` alanına taşınır. Bu ayrım, API entegrasyonunda yerel veri kaynaklarının ekranları değiştirmeden gerçek repository uygulamalarıyla değiştirilmesini kolaylaştırır.
 
 Senaryo içeriği tek bir model üzerinden Home kartına, briefing ekranına, ana videoya, karar zamanlarına ve DNA sonucuna taşınır. Navigation parametreleri TypeScript ile tiplenmiştir.
 
