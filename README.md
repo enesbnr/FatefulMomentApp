@@ -102,6 +102,8 @@ npm test -- --runInBand
 
 Kod tabanı feature-first yapıda düzenlenmiştir. Auth, Home, Simulation ve DNA Result akışlarının ekranları, hook'ları, bileşenleri ve testleri kendi feature klasörlerinde tutulur. Ortak domain modelleri `entities`, uygulama seviyesindeki provider'lar `app`, ortak arayüz parçaları `shared`, tema değerleri `theme` ve route tanımları `navigation` altında bulunur.
 
+Uygulama geliştirilirken Figma ekranları görsel ve ürün kapsamı olarak esas alınmış, verilen akışların dışına çıkılmamaya özen gösterilmiştir. Platform davranışı veya kullanılabilirlik nedeniyle gerekli olan sınırlı sapmalar README'nin Notlar bölümünde ayrıca belirtilmiştir.
+
 ### Dosya yapısı ve feature-first mimari
 
 ```text
