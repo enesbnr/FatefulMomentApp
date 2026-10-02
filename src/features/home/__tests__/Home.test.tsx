@@ -14,14 +14,23 @@ import HomeScreen from '../HomeScreen';
 import ScenarioCard from '../components/ScenarioCard';
 import { createScenarios } from '../data/createScenarios';
 
-test('enables fifteen independent preview cards and disables the remaining demo cards', () => {
+test('unlocks only the first incomplete scenario while keeping fifteen previews', () => {
   const normal = createScenarios('normal');
   const dimmed = createScenarios('dimmed');
   expect(normal).toHaveLength(30);
   expect(new Set(normal.map(item => item.id)).size).toBe(30);
   expect(normal.slice(0, 15).every(item => item.previewEnabled)).toBe(true);
-  expect(normal.slice(0, 15).every(item => !item.disabled)).toBe(true);
-  expect(normal.slice(0, 15).every(item => !item.dimmed)).toBe(true);
+  expect(normal[0]).toMatchObject({
+    completed: false,
+    disabled: false,
+    dimmed: false,
+    locked: false,
+  });
+  expect(
+    normal
+      .slice(1, 15)
+      .every(item => item.disabled && item.dimmed && item.locked),
+  ).toBe(true);
   expect(normal.slice(15).every(item => item.disabled && item.dimmed)).toBe(
     true,
   );
@@ -52,39 +61,47 @@ test('enables fifteen independent preview cards and disables the remaining demo 
   expect(normal.map(item => item.title)).toEqual(dimmed.map(item => item.title));
 });
 
-test('locks completed scenarios and moves them to the end of the carousel', () => {
+test('keeps completed scenarios in place and unlocks the first incomplete one', () => {
   const scenarios = createScenarios(
     'normal',
     new Set(['scenario-1', 'scenario-5']),
   );
 
-  expect(scenarios.slice(-2).map(scenario => scenario.id)).toEqual([
-    'scenario-1',
-    'scenario-5',
-  ]);
-  expect(
-    scenarios.slice(-2).every(
-      scenario =>
-        scenario.completed &&
-        scenario.disabled &&
-        scenario.dimmed &&
-        !scenario.previewEnabled &&
-        !scenario.homePreview.video,
-    ),
-  ).toBe(true);
+  expect(scenarios.map(scenario => scenario.id)).toEqual(
+    Array.from({ length: 30 }, (_, index) => `scenario-${index + 1}`),
+  );
+  expect(scenarios[0]).toMatchObject({
+    completed: true,
+    disabled: false,
+    dimmed: false,
+    locked: false,
+    previewEnabled: true,
+  });
+  expect(scenarios[0].homePreview.video).toBeDefined();
+  expect(scenarios[1]).toMatchObject({
+    completed: false,
+    disabled: false,
+    dimmed: false,
+    locked: false,
+    previewEnabled: true,
+  });
+  expect(scenarios[4]).toMatchObject({
+    completed: true,
+    disabled: false,
+    dimmed: false,
+    locked: false,
+    previewEnabled: true,
+  });
 });
 
-test('renders a completed card without touch responders so FlatList can swipe over it', async () => {
-  const completedScenario = createScenarios(
-    'normal',
-    new Set(['scenario-1']),
-  ).at(-1)!;
+test('renders a locked card without touch responders so FlatList can swipe over it', async () => {
+  const lockedScenario = createScenarios('normal')[1];
   let tree!: Renderer.ReactTestRenderer;
 
   await act(() => {
     tree = Renderer.create(
       <ScenarioCard
-        scenario={completedScenario}
+        scenario={lockedScenario}
         active={false}
         selected={false}
         dimmed

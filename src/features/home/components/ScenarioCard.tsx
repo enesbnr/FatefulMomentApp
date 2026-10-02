@@ -80,6 +80,7 @@ function ScenarioCard({
     return (
       <View
         accessibilityRole="button"
+        accessibilityLabel={`Locked ${scenario.title}`}
         accessibilityState={{ disabled: true }}
         style={[styles.card, dimmed && styles.dimmed]}
       >

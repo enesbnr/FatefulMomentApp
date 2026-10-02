@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
@@ -40,13 +40,7 @@ export default function ScenarioVideoScreen({
   const scenario = getScenarioById(route.params.scenarioId);
   const resume = useScenarioResume(route.params.scenarioId);
 
-  useEffect(() => {
-    if (!resume.loading && !resume.loadError && resume.completedProgress) {
-      navigation.popToTop();
-    }
-  }, [navigation, resume.completedProgress, resume.loadError, resume.loading]);
-
-  if (resume.loading || resume.completedProgress || !scenario) {
+  if (resume.loading || !scenario) {
     return (
       <View style={styles.loadingScreen} testID="scenario-video-loading">
         <ActivityIndicator color={appColors.accent} size="large" />
@@ -79,7 +73,10 @@ export default function ScenarioVideoScreen({
     <ScenarioVideoSession
       navigation={navigation}
       scenario={scenario}
-      initialProgress={resume.resumableProgress}
+      initialProgress={
+        resume.completedProgress ? null : resume.resumableProgress
+      }
+      preserveCompletedProgress={Boolean(resume.completedProgress)}
       recordProgress={resume.recordProgress}
       flushProgress={resume.flush}
       markCompleted={resume.markCompleted}
@@ -91,6 +88,7 @@ function ScenarioVideoSession({
   navigation,
   scenario,
   initialProgress,
+  preserveCompletedProgress,
   recordProgress,
   flushProgress,
   markCompleted,
@@ -98,6 +96,7 @@ function ScenarioVideoSession({
   navigation: ScreenProps['navigation'];
   scenario: Scenario;
   initialProgress: ScenarioProgress | null;
+  preserveCompletedProgress: boolean;
   recordProgress: ReturnType<typeof useScenarioResume>['recordProgress'];
   flushProgress: ReturnType<typeof useScenarioResume>['flush'];
   markCompleted: ReturnType<typeof useScenarioResume>['markCompleted'];
@@ -115,6 +114,23 @@ function ScenarioVideoSession({
   const [restoringPlayback, setRestoringPlayback] = useState(true);
   const [completionStatus, setCompletionStatus] =
     useState<CompletionStatus>('idle');
+  const recordPlaybackProgress = useCallback(
+    (
+      positionSeconds: number,
+      durationSeconds: number,
+      answers: ScenarioProgress['answers'],
+    ) => {
+      if (!preserveCompletedProgress) {
+        recordProgress(positionSeconds, durationSeconds, answers);
+      }
+    },
+    [preserveCompletedProgress, recordProgress],
+  );
+  const flushPlaybackProgress = useCallback(
+    () =>
+      preserveCompletedProgress ? Promise.resolve() : flushProgress(),
+    [flushProgress, preserveCompletedProgress],
+  );
   const screenActive = isFocused && appState === 'active';
   const decisionPlayback = useDecisionPlayback({
     decisions: scenario.decisions,
@@ -131,24 +147,28 @@ function ScenarioVideoSession({
     const subscription = AppState.addEventListener('change', nextState => {
       setAppState(nextState);
       if (nextState !== 'active') {
-        flushProgress().catch(() => undefined);
+        flushPlaybackProgress().catch(() => undefined);
       }
     });
     return () => subscription.remove();
-  }, [flushProgress]);
+  }, [flushPlaybackProgress]);
 
   useEffect(() => {
     if (durationRef.current <= 0) {
       return;
     }
 
-    recordProgress(
+    recordPlaybackProgress(
       currentTimeRef.current,
       durationRef.current,
       decisionPlayback.answers,
     );
-    flushProgress().catch(() => undefined);
-  }, [decisionPlayback.answers, flushProgress, recordProgress]);
+    flushPlaybackProgress().catch(() => undefined);
+  }, [
+    decisionPlayback.answers,
+    flushPlaybackProgress,
+    recordPlaybackProgress,
+  ]);
 
   const handleLoad = (data: OnLoadData) => {
     if (data.duration <= 0) {
@@ -172,7 +192,7 @@ function ScenarioVideoSession({
       setRestoringPlayback(false);
     }
 
-    recordProgress(
+    recordPlaybackProgress(
       currentTimeRef.current,
       data.duration,
       decisionPlayback.answers,
@@ -185,7 +205,7 @@ function ScenarioVideoSession({
     }
     currentTimeRef.current = data.currentTime;
     decisionPlayback.handleProgress(data.currentTime);
-    recordProgress(
+    recordPlaybackProgress(
       data.currentTime,
       durationRef.current,
       decisionPlayback.answers,
@@ -193,7 +213,7 @@ function ScenarioVideoSession({
   };
 
   const handleBack = () => {
-    flushProgress().catch(() => undefined);
+    flushPlaybackProgress().catch(() => undefined);
     navigation.goBack();
   };
 

@@ -61,9 +61,13 @@ export default function HomeScreen({
           previewPlaybackEnabled={previewPlaybackEnabled}
           onSelectScenario={setSelectedScenarioId}
           onStartScenario={scenarioId => {
+            const selectedScenario = scenarios.find(
+              scenario => scenario.id === scenarioId,
+            );
             if (
               progressReady &&
-              !completedScenarioIds.has(scenarioId)
+              selectedScenario &&
+              !selectedScenario.disabled
             ) {
               onScenarioStart?.(scenarioId);
             }

@@ -83,7 +83,7 @@ export default function ResetPasswordScreen({
               <View style={styles.submit}>
                 <AuthButton
                   variant="primaryGlass"
-                  label="Sign In"
+                  label="Send Reset Link"
                   disabled={!canSubmit}
                   onPress={() => onSubmit(email.trim())}
                 />

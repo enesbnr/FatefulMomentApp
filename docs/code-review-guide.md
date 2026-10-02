@@ -62,7 +62,7 @@ scenario/data
 - `src/entities/scenario/model/decisionTypes.ts`: Karar, seçenek, süre, DNA etkisi ve altı DNA boyutunun tiplerini tanımlar.
 - `src/entities/scenario/data/scenarioAssets.ts`: Yerel poster, placeholder, briefing arka planı ve MP4 referanslarını tek yerde toplar.
 - `src/entities/scenario/data/iraqWarDecisions.ts`: Üç demo kararın timestamp, süre, seçenek ve DNA etkilerini tanımlar.
-- `src/entities/scenario/data/scenarios.ts`: 30 kartlık mock katalogdur. İlk 15 senaryo aktif ve karar verisine sahiptir; şu anda ortak yerel medya kullanırlar.
+- `src/entities/scenario/data/scenarios.ts`: 30 kartlık mock katalogdur. İlk 15 senaryo preview ve karar verisine sahiptir; şu anda ortak yerel medya kullanırlar.
 - `src/entities/scenario/selectors/scenarioSelectors.ts`: Tüm senaryoları veya ID'ye göre tek senaryoyu okuyan basit erişim fonksiyonlarını sağlar. API repository geldiğinde ekranların veri kaynağına doğrudan bağlanmaması için bu sınır geliştirilebilir.
 
 ## Scenario progress domain'i
@@ -99,10 +99,10 @@ scenario/data
 - `src/features/home/HomeScreen.tsx`: Header, müzik player, açıklama ve carousel'i birleştirir. Dikey kaydırmayı kapatır; boş alana dokununca seçili/sesli kartı temizler.
 - `src/features/home/components/HomeIntroduction.tsx`: “Scenarios”, açıklama ve senaryo sayısı metinlerini gösterir.
 - `src/features/home/components/ScenarioCarousel.tsx`: Horizontal `FlatList` sanallaştırmasını kurar. Görünürlük eşiğine göre en fazla beş aktif native preview player'ını kartlar arasında devreder; preview konumlarını `scenarioId` ile bellekte tutar, seçilen görünür karta öncelik verir ve ilk batch, pencere boyutu, kart aralığı, seçim ile dim durumunu yönetir.
-- `src/features/home/components/ScenarioCard.tsx`: Tek kartın poster/video katmanı, gradient, süre, başlık, açıklama ve Start butonunu çizer. Seçili kartın sesini açar.
-- `src/features/home/components/ScenarioCardMedia.tsx`: Poster/fallback'i her zaman korur; aktifken Video'yu mount eder. App background olduğunda kapatır, hata halinde postere döner. Mock kartları farklı saniyelere seek ederek bağımsız timeline gibi oynatır.
-- `src/features/home/data/createScenarios.ts`: Domain senaryolarını Home görünüm modeline çevirir. İlk 15'i aktif eder, preview'ları sıfırdan başlatır; tamamlananları kilitleyip listenin sonuna taşır.
-- `src/features/home/types.ts`: Home'a özel `disabled`, `dimmed`, `previewEnabled` ve `previewStartAtSeconds` alanlarını tanımlar.
+- `src/features/home/components/ScenarioCard.tsx`: Tek kartın poster/video katmanı, gradient, süre, başlık, açıklama ve Start butonunu çizer. Seçili kartın sesini açar; yalnızca henüz açılmamış kartların dokunma hedefini kaldırır.
+- `src/features/home/components/ScenarioCardMedia.tsx`: Poster/fallback'i her zaman korur; aktifken Video'yu mount eder. App background olduğunda kapatır, hata halinde postere döner ve carousel'in verdiği bellek içi konuma seek eder.
+- `src/features/home/data/createScenarios.ts`: Domain senaryolarını Home görünüm modeline çevirir. Tamamlanan senaryoları tekrar oynanabilir bırakır, ilk tamamlanmamış senaryoyu açar ve sonrakileri kilitler. Kartların sırası değişmez; ilk 15 kart preview gösterebilir.
+- `src/features/home/types.ts`: Home'a özel `completed`, `locked`, `disabled`, `dimmed`, `previewEnabled` ve `previewStartAtSeconds` alanlarını tanımlar.
 - `src/features/home/scenarioCard.constants.ts`: Kart genişliği, yüksekliği, radius ve carousel aralığı gibi ortak ölçüleri tutar.
 - `src/features/home/testing/fixtures.ts`: Home media testlerinin örnek verisidir.
 - `src/features/home/__tests__/Home.test.tsx`: 15 preview destekli kartı, beş native player sınırını ve görünür kartlara devrini, ses seçimini, Start davranışını ve dikey scroll kilidini test eder.
@@ -111,7 +111,7 @@ scenario/data
 ## Simulation özelliği
 
 - `src/features/simulation/screens/ScenarioBriefingScreen.tsx`: Seçilen scenario ID'sini katalogdan çözer; safe area içinde header, player ve briefing stage'i gösterir.
-- `src/features/simulation/screens/ScenarioVideoScreen.tsx`: Ana video oturumunun koordinatörüdür. Son cevap checkpoint'ine resume/retry, progress kaydı, app/focus pause, karar overlay'i, video hatası, completion save ve DNA navigation burada birleşir.
+- `src/features/simulation/screens/ScenarioVideoScreen.tsx`: Ana video oturumunun koordinatörüdür. Son cevap checkpoint'ine resume/retry, progress kaydı, app/focus pause, karar overlay'i, video hatası, completion save ve DNA navigation burada birleşir. Tamamlanmış bir senaryo yeniden oynatılırken eski sonuç, yarım kalan replay ilerlemesine karşı korunur.
 - `src/features/simulation/components/SimulationStage.tsx`: Briefing arka planı, karartma gradient'i, border ve içerik alanını çizer.
 - `src/features/simulation/components/SimulationBriefing.tsx`: Başlık, açıklama ve “Start Simulation” çağrısını gösterir.
 - `src/features/simulation/hooks/useScenarioResume.ts`: Progress'i yükler, geçici okuma hatasını eksik kayıttan ayırıp retry sunar, iki saniyede bir throttle ederek kaydeder, çıkışta flush eder ve completion kaydını iki kez deneyebilir.
@@ -178,7 +178,6 @@ scenario/data
 
 ## Figma referansları ve proje belgeleri
 
-- `references/figma/`: Home, decision, simulation, video ve DNA ekranlarının PNG/CSS referanslarıdır. Runtime tarafından kullanılmaz; görsel karşılaştırma içindir.
 - `README.md`: Kurulum, demo davranışları, mimari kararlar, test komutları ve ilerideki API/cache yaklaşımını anlatır.
 - `docs/auth-landing-implementation.md`: Auth landing uygulamasının Figma ölçüleri ve alınan kararlarını belgeler.
 - `docs/ui-polish-backlog.md`: Görsel iyileştirme ve sonraki iş listesidir.
@@ -222,6 +221,6 @@ ScenarioApiDto
   -> mevcut ekranlar
 ```
 
-API'den `id`, `title`, `description`, `duration`, poster URL, preview video URL, simulation video URL ve kararlar gelir. Yerel mock kartlar aynı MP4'ü paylaşsa da her preview sıfırdan başlar. Gerçek farklı preview URL'leri geldiğinde aynı oynatma davranışı korunur.
+API'den `id`, `title`, `description`, `duration`, poster URL, preview video URL, simulation video URL ve kararlar gelir. Yerel mock kartlar aynı MP4'ü paylaşsa da her kart kendi preview konumunu bellekte tutar. Gerçek farklı preview URL'leri geldiğinde aynı lifecycle davranışı korunur.
 
 Auth tarafındaki mevcut hesap ve credential kontrolü demo davranışıdır. Gerçek auth geldiğinde token/session güvenli storage'da yönetilmeli; kullanıcıyı hatırlama davranışı ürünün logout/session tasarımıyla birlikte eklenmelidir.

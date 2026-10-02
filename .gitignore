@@ -66,6 +66,9 @@ yarn-error.log
 # testing
 /coverage
 
+# Local design reference exports
+/references/
+
 # Yarn
 .yarn/*
 !.yarn/patches

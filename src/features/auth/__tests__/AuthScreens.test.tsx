@@ -187,6 +187,7 @@ test('forgot password opens reset flow, validates email, and returns to sign in'
   const resetButton = () => resetScreen().findByType(AuthButton);
   const emailInput = () => resetScreen().findByType(TextInput);
 
+  expect(resetButton().props.label).toBe('Send Reset Link');
   expect(resetButton().props.disabled).toBe(true);
   await act(() => emailInput().props.onChangeText('invalid'));
   expect(resetButton().props.disabled).toBe(true);

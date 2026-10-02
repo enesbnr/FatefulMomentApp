@@ -98,10 +98,17 @@ test('unmounts completed video and returns Scenarios to Home', async () => {
   await act(() => navigationRef.navigate('Scenarios', { screen: 'Home' }));
   expect(tree.root.findByType(HomeScreen)).toBeDefined();
   expect(tree.root.findAllByType(Video)).toHaveLength(0);
-  expect(tree.root.findByType(FlatList).props.data.at(-1).id).toBe(
-    'scenario-1',
-  );
-  expect(tree.root.findByType(FlatList).props.data.at(-1).disabled).toBe(true);
+  const homeScenarios = tree.root.findByType(FlatList).props.data;
+  expect(homeScenarios[0]).toMatchObject({
+    id: 'scenario-1',
+    completed: true,
+    disabled: false,
+  });
+  expect(homeScenarios[1]).toMatchObject({
+    id: 'scenario-2',
+    disabled: false,
+    locked: false,
+  });
   expect(navigationRef.canGoBack()).toBe(false);
 
   await act(() => tree.unmount());
@@ -240,7 +247,7 @@ test('does not start or overwrite progress when storage read temporarily fails',
   await act(() => tree.unmount());
 });
 
-test('does not replay or overwrite a completed scenario reached directly', async () => {
+test('replays a completed scenario without overwriting its saved result before completion', async () => {
   const repository = new MemoryScenarioProgressRepository();
   await repository.save({
     schemaVersion: 2,
@@ -274,17 +281,28 @@ test('does not replay or overwrite a completed scenario reached directly', async
   const completedCard = homeItems.find(
     (scenario: { id: string }) => scenario.id === 'scenario-1',
   );
-  expect(completedCard.disabled).toBe(true);
-  expect(completedCard.dimmed).toBe(true);
-  expect(homeItems.at(-1).id).toBe('scenario-1');
+  expect(completedCard.disabled).toBe(false);
+  expect(completedCard.dimmed).toBe(false);
+  expect(homeItems[0].id).toBe('scenario-1');
+  expect(homeItems[1]).toMatchObject({
+    id: 'scenario-2',
+    disabled: false,
+    locked: false,
+  });
 
   await act(() => {
     tree.root.findByType(HomeScreen).props.onScenarioStart('scenario-1');
   });
   await act(async () => tree.root.findByType(SimulationBriefing).props.onStart());
 
-  expect(tree.root.findByType(HomeScreen)).toBeDefined();
-  expect(tree.root.findAllByType(Video)).toHaveLength(0);
+  const replayVideo = tree.root.findByType(Video);
+  await act(() => replayVideo.props.onLoad({ duration: 97 }));
+  await act(() => replayVideo.props.onProgress({ currentTime: 12 }));
+  expect(saveProgress).not.toHaveBeenCalled();
+
+  await act(() => navigationRef.goBack());
+  expect(tree.root.findByType(SimulationBriefing)).toBeDefined();
+  expect((await repository.get('scenario-1'))?.status).toBe('completed');
   expect(saveProgress).not.toHaveBeenCalled();
 
   await act(() => tree.unmount());

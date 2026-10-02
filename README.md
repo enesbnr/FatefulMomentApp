@@ -92,7 +92,7 @@ Senaryo içeriği tek bir model üzerinden Home kartına, briefing ekranına, an
 
 Video sırasında karar açıldığında oynatma durur. Seçim yapıldığında veya süre dolduğunda karar kaydedilir ve video devam eder. İlerleme `ScenarioProgressRepository` sözleşmesi üzerinden AsyncStorage'da tutulur. Kullanıcı senaryoya döndüğünde video, son tamamlanan kararın ardından güvenli bir checkpoint'ten devam eder. Geçici okuma hatası ile bozuk kayıt birbirinden ayrılır; bozuk kayıt temizlenirken geçici hatada kullanıcıya yeniden deneme sunulur.
 
-Home carousel'i sanallaştırılmış yatay `FlatList` kullanır. Yerel demoda ilk 15 kart preview gösterebilir; görünür kartlar arasından en fazla beş native video player oluşturulur, diğer kartlar poster olarak kalır. Bir kart player sınırından çıktığında preview konumu `scenarioId` üzerinden bellekte tutulur ve kart yeniden aktif olduğunda kaldığı yerden devam eder. Bu geçici durum senaryo ilerlemesine yazılmaz ve uygulama kapanınca silinir. Home focus kaybettiğinde veya uygulama arka plana geçtiğinde preview player'ları kaldırılır. Seçilen görünür kartın sesi açılır. Tamamlanan senaryolar listenin sonuna taşınır ve yeniden seçilemez.
+Home carousel'i sanallaştırılmış yatay `FlatList` kullanır. Yerel demoda ilk 15 kart preview gösterebilir; görünür kartlar arasından en fazla beş native video player oluşturulur, diğer kartlar poster olarak kalır. Bir kart player sınırından çıktığında preview konumu `scenarioId` üzerinden bellekte tutulur ve kart yeniden aktif olduğunda kaldığı yerden devam eder. Bu geçici durum senaryo ilerlemesine yazılmaz ve uygulama kapanınca silinir. Home focus kaybettiğinde veya uygulama arka plana geçtiğinde preview player'ları kaldırılır. Seçilen görünür kartın sesi açılır. Başlangıçta yalnızca ilk senaryo açıktır; tamamlanan kart yerinde kalır, tekrar oynanabilir ve sıradaki senaryo açılır. Henüz açılmamış kartların karartılmış preview'ları oynayabilir ancak kartlar başlatılamaz.
 
 Beş eşzamanlı native video player, özellikle düşük donanımlı cihazlarda bellek tüketimi, ısınma, kare düşmesi veya uygulamanın kapanması gibi performans sorunlarına yol açabilir. Bu değer yerel demo ve teslim cihazındaki görsel deneyim için seçilmiştir. Gerçek API entegrasyonunda carousel için ana videodan ayrı, kısa süreli, düşük çözünürlüklü ve düşük bitrate'li preview dosyaları sağlanmalıdır. Eşzamanlı player sınırı da gerçek cihaz ölçümlerine göre düşürülebilmeli; aktif sınırın dışındaki kartlar poster göstermeye devam etmelidir.
 
@@ -102,7 +102,7 @@ Responsive yerleşimde ortak safe-area verisi kullanılır; her ekran bu veriyi 
 
 - **Medya optimizasyonu:** Demo için aynı anda en fazla beş preview oynatılır. Düşük donanımlı cihazlarda oluşabilecek performans sorunları, API'den kısa, düşük çözünürlüklü ve düşük bitrate'li preview dosyaları alınarak azaltılabilir. Player sınırı gerçek cihaz ölçümlerine göre ayarlanabilir.
 - **Medya cache:** API'den uzak medya gelmeye başladığında görünür ve yakındaki preview dosyaları TTL/LRU politikalarıyla sınırlı bir disk cache içinde tutulabilir.
-- **Çoklu oynatma:** Oyun akışında tekrar hakkı belirtilmediği için tamamlanan senaryolar şu an kilitlenir. Yeniden oynatma istenirse her deneme ayrı bir `attemptId` ile saklanarak eski sonuçların ezilmesi önlenebilir.
+- **Oynatma geçmişi:** Tamamlanan senaryolar tekrar oynanabilir. Tekrar oynatma yarıda bırakılırsa önceki tamamlanmış sonuç korunur; yeniden tamamlanırsa sonuç güncellenir. Birden fazla sonucu ayrı ayrı göstermek istenirse her oynatma ileride ayrı bir `attemptId` ile saklanabilir.
 - **Responsive ve erişilebilirlik:** Uzun API metinleri, büyük yazı ayarları, dar landscape ekranlar ve farklı çentik yapıları daha geniş bir cihaz grubunda test edilebilir. İçerik sığmadığında scroll açılıp sığdığında Figma görünümü korunabilir.
 - **Performans takibi:** Video, buffering, resume, cache ve API hataları ölçülebilir. Player, buffer ve cache ayarları gerçek cihaz verilerine göre belirlenebilir.
 
@@ -125,9 +125,11 @@ AI çıktıları doğrudan kabul edilmedi. Öneriler proje gereksinimleri ve Fig
 ## Notlar
 
 - Auth akışı demo amaçlıdır. Başarılı giriş yalnızca çalışan uygulama oturumu boyunca geçerlidir; uygulama yeniden başlatıldığında Auth ekranı açılır. Tasarımda logout veya hesap yönetimi bulunmadığı için dummy session kalıcı olarak saklanmaz.
+- Şifre sıfırlama ekranındaki buton Figma'da `Sign In` olarak verilmişti. Ekranın gerçek eylemini doğru anlatması için metin `Send Reset Link` olarak düzeltildi; tasarım kapsamını korumak amacıyla geri sayım veya ek bir resend arayüzü eklenmedi.
 - Senaryo verileri ve medya dosyaları yereldir. İlk 15 kart, preview lifecycle ve liste performansını göstermek için aynı paketlenmiş videoyu farklı senaryo kayıtları üzerinden kullanır.
+- Level açılma kuralı, Figma'daki düşük opacity durumunun kilitli içerik olarak yorumlanmasıyla demoda sıralı modellenmiştir. Gerçek API entegrasyonunda kilit durumu ve ön koşullar sunucudan gelen ürün kurallarıyla belirlenmelidir.
 - DNA radar grafiği ve altı trait skoru kayıtlı cevaplardan hesaplanır. Archetype, pattern ve blind-spot metinleri API veya yorumlama kuralları sağlanmadığı için Figma'dan alınan sabit demo içeriğidir.
-- Senaryolar tek oynatma kuralına sahiptir. Tamamlanan kart kilitlenir; çoklu attempt geçmişi tutulmaz.
+- Tamamlanan senaryolar tekrar oynanabilir. Tekrar oynatma sırasında geçici ilerleme eski tamamlanmış sonucu ezmez; sonuç yalnızca yeni oynatma tamamlandığında güncellenir. Ayrı bir attempt geçmişi tutulmaz.
 - Uzak medya cache/prefetch sistemi henüz uygulanmamıştır. Gerçek API'nin URL, format, CDN ve medya sürümleme sözleşmesi belli olduktan sonra gerçek cihaz ölçümlerine göre tasarlanmalıdır.
 - `react-native-video@6.19.2` sürümündeki Android `TextureView` problemi `scripts/patch-react-native-video.js` ile `postinstall` sırasında düzeltilir. Paket sürümü değiştirilirse patch yeniden değerlendirilmelidir.
 
