@@ -1,3 +1,4 @@
+import { appColors, withAlpha } from '../../../theme/colors';
 import { StyleSheet, View } from 'react-native';
 import type { DnaTraitScores } from '../model/types';
 import { dnaResultColors } from './dnaResult.constants';
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderTopWidth: 0.8,
     borderRightWidth: 0.8,
-    borderColor: 'rgba(29, 41, 61, 0.4)',
+    borderColor: withAlpha(appColors.cardBorder, 0.4),
     borderTopRightRadius: 10,
   },
   bottomCorner: {
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderLeftWidth: 0.8,
     borderBottomWidth: 0.8,
-    borderColor: 'rgba(29, 41, 61, 0.4)',
+    borderColor: withAlpha(appColors.cardBorder, 0.4),
     borderBottomLeftRadius: 10,
   },
 });

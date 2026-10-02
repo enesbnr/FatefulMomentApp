@@ -6,7 +6,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
-    "postinstall": "node scripts/patch-orientation-locker.js",
+    "postinstall": "node scripts/patch-orientation-locker.js && node scripts/patch-react-native-video.js",
     "start": "react-native start",
     "test": "jest"
   },

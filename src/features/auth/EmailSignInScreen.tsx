@@ -1,3 +1,5 @@
+import { fontFamilies } from '../../theme/typography';
+import { appColors } from '../../theme/colors';
 import { useRef, useState, type ComponentRef } from 'react';
 import {
   KeyboardAvoidingView,
@@ -13,13 +15,16 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { colors, layout } from '../../theme/authLanding';
+import {
+  colors,
+  getContentTopSpacing,
+  layout,
+} from '../../theme/authLanding';
 import EyeNotIcon from '../../../assets/auth/eye-not.svg';
 import EyeIcon from '../../../assets/auth/eye.svg';
 import {
   emailSpacing as spacing,
   emailTypography,
-  getEmailContentTop,
 } from '../../theme/emailSignIn';
 import AuthHeader from './components/AuthHeader';
 import BackButton from './components/BackButton';
@@ -35,7 +40,7 @@ import {
 const noop = () => {};
 type Props = {
   onBack: () => void;
-  onSignInSuccess?: () => void;
+  onSignInSuccess?: () => void | Promise<void>;
   onForgotPassword?: () => void;
   onSignUp?: () => void;
   account?: { email: string; password: string } | null;
@@ -50,23 +55,41 @@ export default function EmailSignInScreen({
 }: Props) {
   const insets = useSafeAreaInsets();
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const submittingRef = useRef(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordError, setPasswordError] = useState<string>();
+  const [submitError, setSubmitError] = useState<string>();
+  const [submitting, setSubmitting] = useState(false);
   const canSubmit = canSubmitSignIn(email, password);
   const emailError = getEmailError(email);
   const showPasswordControl = passwordFocused || password.length > 0;
-  const submit = () => {
+  const submit = async () => {
+    if (submittingRef.current) {
+      return;
+    }
+
     const accountMatches = credentialsMatch(account, email, password);
     setPasswordError(
-      accountMatches
-        ? undefined
-        : validationMessages.invalidCredentials,
+      accountMatches ? undefined : validationMessages.invalidCredentials,
     );
-    if (accountMatches) {
-      onSignInSuccess();
+    if (!accountMatches) {
+      return;
+    }
+
+    submittingRef.current = true;
+    setSubmitting(true);
+    setSubmitError(undefined);
+
+    try {
+      await onSignInSuccess();
+    } catch {
+      setSubmitError('Sign in could not be completed. Please try again.');
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
   return (
@@ -78,7 +101,7 @@ export default function EmailSignInScreen({
         <ScrollView
           contentContainerStyle={[
             styles.content,
-            { paddingTop: getEmailContentTop(insets.top) },
+            { paddingTop: getContentTopSpacing(insets.top) },
           ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -100,7 +123,10 @@ export default function EmailSignInScreen({
                 accessibilityLabel="Email"
                 placeholder="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={text => {
+                  setEmail(text);
+                  setSubmitError(undefined);
+                }}
                 inputMode="email"
                 keyboardType="email-address"
                 showSoftInputOnFocus
@@ -111,13 +137,10 @@ export default function EmailSignInScreen({
                 submitBehavior="submit"
                 onSubmitEditing={() => passwordRef.current?.focus()}
                 errorMessage={emailError}
-                helperFontFamily="Nunito"
+                helperFontFamily={fontFamilies.nunitoRegular}
               />
               <View
-                style={[
-                  styles.password,
-                  emailError && styles.fieldAfterError,
-                ]}
+                style={[styles.password, emailError && styles.fieldAfterError]}
               >
                 <FormField
                   ref={passwordRef}
@@ -127,6 +150,7 @@ export default function EmailSignInScreen({
                   onChangeText={text => {
                     setPassword(text);
                     setPasswordError(undefined);
+                    setSubmitError(undefined);
                   }}
                   onFocus={() => setPasswordFocused(true)}
                   onBlur={() => setPasswordFocused(false)}
@@ -136,12 +160,12 @@ export default function EmailSignInScreen({
                   autoComplete="current-password"
                   returnKeyType="done"
                   onSubmitEditing={() => {
-                    if (canSubmit) {
+                    if (canSubmit && !submitting) {
                       submit();
                     }
                   }}
                   errorMessage={passwordError}
-                  helperFontFamily="Nunito"
+                  helperFontFamily={fontFamilies.nunitoRegular}
                   trailing={
                     showPasswordControl ? (
                       <Pressable
@@ -178,11 +202,20 @@ export default function EmailSignInScreen({
               >
                 <AuthButton
                   variant="primaryGlass"
-                  label="Sign in"
-                  disabled={!canSubmit}
+                  label={submitting ? 'Signing in…' : 'Sign in'}
+                  disabled={!canSubmit || submitting}
                   onPress={submit}
                 />
               </View>
+              {submitError ? (
+                <Text
+                  accessibilityRole="alert"
+                  style={styles.submitError}
+                  testID="sign-in-submit-error"
+                >
+                  {submitError}
+                </Text>
+              ) : null}
               <Pressable
                 accessibilityRole="button"
                 onPress={onForgotPassword}
@@ -220,14 +253,27 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexShrink: 0,
   },
-  header: { paddingTop: spacing.backToHeaderTop },
-  // Figma's back control overlaps the empty left side of the logo group.
-  back: { position: 'absolute', top: 0, left: 0 },
+  header: { position: 'relative' },
+  // Keep the back control at Figma y=64 while every auth logo starts at y=82.
+  back: {
+    position: 'absolute',
+    top: -spacing.backToHeaderTop,
+    left: 0,
+  },
   form: { marginTop: spacing.headerToForm },
   password: { marginTop: spacing.fields },
   fieldAfterError: { marginTop: 12 },
   submit: { marginTop: spacing.passwordToSubmit },
   submitAfterError: { marginTop: 28 },
+  submitError: {
+    marginTop: 12,
+    fontFamily: fontFamilies.nunitoRegular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: appColors.danger,
+    textAlign: 'center',
+    includeFontPadding: false,
+  },
   eyeButton: {
     width: 18,
     height: 18,

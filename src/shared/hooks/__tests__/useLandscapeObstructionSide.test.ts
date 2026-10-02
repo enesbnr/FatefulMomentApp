@@ -1,5 +1,8 @@
 import type { OrientationType } from 'react-native-orientation-locker';
-import { resolveLandscapeObstructionSide } from '../useLeftDrawerInset';
+import {
+  preserveLandscapeInterfaceOrientation,
+  resolveLandscapeObstructionSide,
+} from '../useLandscapeObstructionSide';
 
 const landscapeLeft = 'LANDSCAPE-LEFT' as OrientationType;
 const landscapeRight = 'LANDSCAPE-RIGHT' as OrientationType;
@@ -20,7 +23,7 @@ describe('resolveLandscapeObstructionSide', () => {
     ).toBe('right');
   });
 
-  test('uses stable interface orientation when landscape insets are symmetric', () => {
+  test('uses interface orientation when landscape insets are symmetric', () => {
     expect(
       resolveLandscapeObstructionSide(
         { left: 59, right: 59 },
@@ -35,7 +38,7 @@ describe('resolveLandscapeObstructionSide', () => {
     ).toBe('right');
   });
 
-  test('does not invent an obstruction on devices without a large inset', () => {
+  test('does not invent an obstruction when horizontal insets are small and equal', () => {
     expect(
       resolveLandscapeObstructionSide(
         { left: 0, right: 0 },
@@ -48,5 +51,28 @@ describe('resolveLandscapeObstructionSide', () => {
         landscapeRight,
       ),
     ).toBeNull();
+  });
+});
+
+describe('preserveLandscapeInterfaceOrientation', () => {
+  test('keeps the last landscape side for flat and transient device states', () => {
+    const transientOrientations = [
+      'FACE-UP',
+      'FACE-DOWN',
+      'UNKNOWN',
+      'PORTRAIT',
+    ] as OrientationType[];
+
+    transientOrientations.forEach(orientation => {
+      expect(
+        preserveLandscapeInterfaceOrientation(landscapeLeft, orientation),
+      ).toBe(landscapeLeft);
+    });
+  });
+
+  test('accepts a new valid landscape side', () => {
+    expect(
+      preserveLandscapeInterfaceOrientation(landscapeLeft, landscapeRight),
+    ).toBe(landscapeRight);
   });
 });

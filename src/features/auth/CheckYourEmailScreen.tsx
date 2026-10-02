@@ -1,5 +1,10 @@
+import { appColors, withAlpha } from '../../theme/colors';
+import { fontFamilies } from '../../theme/typography';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, layout } from '../../theme/authLanding';
 import { emailSpacing, getEmailContentTop } from '../../theme/emailSignIn';
@@ -101,20 +106,19 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 999,
-    backgroundColor: 'rgba(0, 211, 243, 0.2)',
+    backgroundColor: withAlpha(appColors.accent, 0.2),
     alignItems: 'center',
     justifyContent: 'center',
   },
   textGroup: {
     width: '100%',
     maxWidth: 282,
-    height: 88,
     marginTop: 24,
     alignItems: 'center',
     gap: 8,
   },
   title: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 24,
     lineHeight: 32,
     color: colors.white,
@@ -123,16 +127,19 @@ const styles = StyleSheet.create({
   },
   description: {
     width: '100%',
-    height: 48,
     maxWidth: 282,
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 16,
     lineHeight: 24,
     color: colors.subtitle,
     textAlign: 'center',
     includeFontPadding: false,
   },
-  email: { fontFamily: 'Inter-Medium', color: colors.white },
+  email: {
+    fontFamily: fontFamilies.medium,
+    color: colors.white,
+    flexShrink: 1,
+  },
   button: {
     width: '100%',
     marginTop: 32,

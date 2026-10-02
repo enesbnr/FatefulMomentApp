@@ -1,4 +1,5 @@
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { fontFamilies } from '../../../theme/typography';
+import { StyleSheet, Text, View } from 'react-native';
 import { appColors } from '../../../theme/colors';
 
 type HomeIntroductionProps = {
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
   container: { paddingTop: 16 },
   headingRow: { height: 28, justifyContent: 'center' },
   heading: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 20,
     lineHeight: 20,
     color: appColors.textPrimary,
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   },
   description: {
     marginTop: 5,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontFamily: fontFamilies.mono,
     fontWeight: '700',
     fontSize: 12,
     lineHeight: 16,
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
   count: {
     marginTop: 14,
     marginBottom: 8,
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 12,
     lineHeight: 16,
     color: appColors.textMuted,

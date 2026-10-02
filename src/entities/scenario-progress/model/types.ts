@@ -9,12 +9,13 @@ export type DecisionAnswer = {
 };
 
 export type ScenarioProgressStatus = 'in_progress' | 'completed';
+export const SCENARIO_PROGRESS_SCHEMA_VERSION = 2 as const;
 
 export type ScenarioProgress = {
+  schemaVersion: typeof SCENARIO_PROGRESS_SCHEMA_VERSION;
   scenarioId: string;
   positionSeconds: number;
   durationSeconds: number;
-  completedDecisionIds: string[];
   answers: DecisionAnswer[];
   status: ScenarioProgressStatus;
   updatedAt: number;

@@ -1,4 +1,13 @@
+import { appColors, withAlpha } from '../../../theme/colors';
+import { fontFamilies } from '../../../theme/typography';
+import { type ComponentType } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import ControlIcon from '../../../../assets/dna-result/icons/control.svg';
+import CourageIcon from '../../../../assets/dna-result/icons/courage.svg';
+import EmpathyIcon from '../../../../assets/dna-result/icons/empathy.svg';
+import EthicsIcon from '../../../../assets/dna-result/icons/ethics.svg';
+import RiskIcon from '../../../../assets/dna-result/icons/risk.svg';
+import VisionIcon from '../../../../assets/dna-result/icons/vision.svg';
 import type { DnaDimension } from '../../../entities/scenario/model/decisionTypes';
 import type { DnaTraitScores } from '../model/types';
 import {
@@ -12,8 +21,21 @@ type Props = {
   scores: DnaTraitScores;
 };
 
+const traitIcons: Record<
+  DnaDimension,
+  ComponentType<{ width: number; height: number; testID?: string }>
+> = {
+  vision: VisionIcon,
+  courage: CourageIcon,
+  risk: RiskIcon,
+  control: ControlIcon,
+  empathy: EmpathyIcon,
+  ethics: EthicsIcon,
+};
+
 function TraitGlyph({ trait }: { trait: DnaDimension }) {
-  return <View style={styles.glyph} testID={`dna-trait-${trait}-icon-slot`} />;
+  const Icon = traitIcons[trait];
+  return <Icon width={6.73} height={6.73} testID={`dna-trait-${trait}-icon`} />;
 }
 
 export default function TraitScoreGrid({ scores }: Props) {
@@ -23,7 +45,9 @@ export default function TraitScoreGrid({ scores }: Props) {
         <View key={trait} style={styles.card} testID={`dna-trait-${trait}`}>
           <View style={styles.valueRow}>
             <TraitGlyph trait={trait} />
-            <Text style={styles.value}>{scores[trait]}</Text>
+            <Text style={styles.value} testID={`dna-trait-${trait}-value`}>
+              {scores[trait]}
+            </Text>
           </View>
           <Text style={styles.label}>{dnaTraitLabels[trait]}</Text>
           <View style={styles.track}>
@@ -52,7 +76,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.35,
     borderColor: dnaResultColors.panelBorder,
     borderRadius: 7,
-    backgroundColor: 'rgba(2, 6, 24, 0.6)',
+    backgroundColor: withAlpha(appColors.background, 0.6),
   },
   valueRow: {
     height: 7,
@@ -60,12 +84,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  glyph: {
-    width: 6.73,
-    height: 6.73,
-  },
   value: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontStyle: 'italic',
     fontSize: 5,
     lineHeight: 7,

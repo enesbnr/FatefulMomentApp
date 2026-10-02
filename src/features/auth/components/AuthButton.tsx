@@ -1,3 +1,4 @@
+import { appColors, withAlpha } from '../../../theme/colors';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, layout, typography } from '../../../theme/authLanding';
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.contentMaxWidth,
     alignSelf: 'center',
-    height: layout.buttonHeight,
+    minHeight: layout.buttonHeight,
     borderRadius: layout.buttonRadius,
     flexShrink: 0,
     flexDirection: 'row',
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.emailBackground,
     borderWidth: 1,
-    borderColor: 'rgba(150, 220, 235, 0.45)',
+    borderColor: withAlpha(appColors.glassBorder, 0.45),
   },
   social: {
     paddingHorizontal: 16,

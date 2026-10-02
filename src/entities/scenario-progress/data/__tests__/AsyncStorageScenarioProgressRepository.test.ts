@@ -4,13 +4,22 @@ import AsyncStorageScenarioProgressRepository from '../AsyncStorageScenarioProgr
 import { getScenarioProgressStorageKey } from '../scenarioProgressStorageKeys';
 
 const progress: ScenarioProgress = {
+  schemaVersion: 2,
   scenarioId: 'iraq-war',
   positionSeconds: 64,
   durationSeconds: 97,
-  completedDecisionIds: ['decision-1'],
   answers: [{ decisionId: 'decision-1', optionId: 'option-2' }],
   status: 'in_progress',
   updatedAt: 1,
+};
+const legacyProgress = {
+  scenarioId: progress.scenarioId,
+  positionSeconds: progress.positionSeconds,
+  durationSeconds: progress.durationSeconds,
+  answers: progress.answers,
+  status: progress.status,
+  updatedAt: progress.updatedAt,
+  completedDecisionIds: ['conflicting-decision'],
 };
 
 beforeEach(async () => {
@@ -71,6 +80,55 @@ describe('AsyncStorageScenarioProgressRepository.get', () => {
     );
 
     expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  test('migrates a V1 record and treats answers as the source of truth', async () => {
+    const repository = new AsyncStorageScenarioProgressRepository();
+    await AsyncStorage.setItem(key, JSON.stringify(legacyProgress));
+    jest.clearAllMocks();
+
+    await expect(repository.get(progress.scenarioId)).resolves.toEqual(
+      progress,
+    );
+
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      key,
+      JSON.stringify(progress),
+    );
+    await expect(AsyncStorage.getItem(key)).resolves.toBe(
+      JSON.stringify(progress),
+    );
+    expect(progress.answers.map(answer => answer.decisionId)).toEqual([
+      'decision-1',
+    ]);
+  });
+
+  test('returns migrated progress when the best-effort rewrite fails', async () => {
+    const repository = new AsyncStorageScenarioProgressRepository();
+    const legacyValue = JSON.stringify(legacyProgress);
+    await AsyncStorage.setItem(key, legacyValue);
+    jest.clearAllMocks();
+    jest.mocked(AsyncStorage.setItem).mockRejectedValueOnce(
+      new Error('storage unavailable'),
+    );
+
+    await expect(repository.get(progress.scenarioId)).resolves.toEqual(
+      progress,
+    );
+    await expect(AsyncStorage.getItem(key)).resolves.toBe(legacyValue);
+    expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  test('writes only the V2 source-of-truth fields', async () => {
+    const repository = new AsyncStorageScenarioProgressRepository();
+
+    await repository.save(progress);
+
+    const storedValue = await AsyncStorage.getItem(key);
+    expect(JSON.parse(storedValue!)).toEqual(progress);
+    expect(JSON.parse(storedValue!)).not.toHaveProperty(
+      'completedDecisionIds',
+    );
   });
 
   test('returns null without removing anything when progress is absent', async () => {

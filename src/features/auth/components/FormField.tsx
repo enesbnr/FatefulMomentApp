@@ -14,6 +14,7 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
+import { fontFamilies } from '../../../theme/typography';
 import { colors, layout } from '../../../theme/authLanding';
 import { emailTypography, fieldColors } from '../../../theme/emailSignIn';
 
@@ -37,7 +38,7 @@ const FormField = forwardRef<ComponentRef<typeof TextInput>, FormFieldProps>(
       onChangeText,
       value,
       errorMessage,
-      helperFontFamily = 'Inter-Regular',
+      helperFontFamily = fontFamilies.regular,
       ...props
     },
     ref,
@@ -56,8 +57,8 @@ const FormField = forwardRef<ComponentRef<typeof TextInput>, FormFieldProps>(
               borderColor: errorMessage
                 ? fieldColors.error
                 : active
-                  ? fieldColors.focusedBorder
-                  : fieldColors.border,
+                ? fieldColors.focusedBorder
+                : fieldColors.border,
             },
           ]}
         >
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.contentMaxWidth,
     alignSelf: 'center',
-    height: 56,
+    minHeight: 56,
     padding: 16,
     gap: 16,
     borderRadius: 16,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     minWidth: 0,
-    height: 24,
+    minHeight: 24,
     padding: 0,
     paddingTop: 0,
     paddingBottom: 0,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   },
   helper: {
     width: '100%',
-    height: 16,
+    minHeight: 16,
     fontSize: 11,
     fontWeight: '300',
     lineHeight: 16,

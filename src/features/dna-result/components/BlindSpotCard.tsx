@@ -1,3 +1,5 @@
+import { appColors, withAlpha } from '../../../theme/colors';
+import { fontFamilies } from '../../../theme/typography';
 import { StyleSheet, Text, View } from 'react-native';
 import type { DnaResult } from '../model/types';
 import { dnaResultColors } from './dnaResult.constants';
@@ -20,25 +22,24 @@ export default function BlindSpotCard({ blindSpot }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 123,
+    minHeight: 123,
     padding: 8,
     gap: 8,
     borderWidth: 1,
-    borderColor: 'rgba(251, 44, 54, 0.2)',
+    borderColor: withAlpha(appColors.dangerStrong, 0.2),
     borderRadius: 16,
-    backgroundColor: 'rgba(251, 44, 54, 0.05)',
+    backgroundColor: withAlpha(appColors.dangerStrong, 0.05),
   },
   question: {
-    height: 11,
-    fontFamily: 'Inter-Regular',
+    minHeight: 11,
+    fontFamily: fontFamilies.regular,
     fontSize: 8,
     lineHeight: 11,
     color: dnaResultColors.white,
     includeFontPadding: false,
   },
   description: {
-    flex: 1,
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 8,
     lineHeight: 11,
     color: dnaResultColors.muted,

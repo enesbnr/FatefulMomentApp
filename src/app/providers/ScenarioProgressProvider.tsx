@@ -4,7 +4,7 @@ import type { ScenarioProgressRepository } from '../../entities/scenario-progres
 
 const defaultRepository = new AsyncStorageScenarioProgressRepository();
 const ScenarioProgressRepositoryContext =
-  createContext<ScenarioProgressRepository>(defaultRepository);
+  createContext<ScenarioProgressRepository | null>(null);
 
 export function ScenarioProgressProvider({
   children,
@@ -20,5 +20,14 @@ export function ScenarioProgressProvider({
   );
 }
 
-export const useScenarioProgressRepository = () =>
-  useContext(ScenarioProgressRepositoryContext);
+export function useScenarioProgressRepository() {
+  const repository = useContext(ScenarioProgressRepositoryContext);
+
+  if (!repository) {
+    throw new Error(
+      'useScenarioProgressRepository must be used within ScenarioProgressProvider',
+    );
+  }
+
+  return repository;
+}

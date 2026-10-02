@@ -1,3 +1,4 @@
+import { fontFamilies } from '../../../theme/typography';
 import { StyleSheet, Text, View } from 'react-native';
 import { dnaResultColors, monoFont } from './dnaResult.constants';
 import SectionLabel from './SectionLabel';
@@ -25,7 +26,7 @@ export default function PatternDetectionCard({ patterns }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 133,
+    minHeight: 133,
     padding: 8,
     gap: 8,
     borderWidth: 1,
@@ -34,7 +35,6 @@ const styles = StyleSheet.create({
     backgroundColor: dnaResultColors.panel,
   },
   patterns: {
-    flex: 1,
     gap: 8,
   },
   row: {
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   pattern: {
     flex: 1,
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 8,
     lineHeight: 11,
     color: dnaResultColors.subdued,

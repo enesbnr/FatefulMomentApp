@@ -12,12 +12,14 @@ type Options = {
   decisions: ScenarioDecision[];
   timerRunning: boolean;
   initialAnswers?: DecisionAnswer[];
+  presentationDelayMs?: number;
 };
 
 export default function useDecisionPlayback({
   decisions,
   timerRunning,
   initialAnswers = [],
+  presentationDelayMs = 0,
 }: Options) {
   const initialAnswersRef = useRef(initialAnswers);
   const completedDecisionIds = useRef(
@@ -39,10 +41,7 @@ export default function useDecisionPlayback({
   }, []);
 
   const completeDecision = useCallback(
-    (
-      decision: ScenarioDecision,
-      optionId: DecisionOption['id'] | null,
-    ) => {
+    (decision: ScenarioDecision, optionId: DecisionOption['id'] | null) => {
       completedDecisionIds.current.add(decision.id);
       setAnswers(currentAnswers => [
         ...currentAnswers.filter(answer => answer.decisionId !== decision.id),
@@ -67,7 +66,7 @@ export default function useDecisionPlayback({
       const nextDecision = decisions.find(
         decision =>
           !completedDecisionIds.current.has(decision.id) &&
-          currentTimeMs >= decision.triggerAtMs,
+          currentTimeMs >= decision.triggerAtMs + presentationDelayMs,
       );
 
       if (!nextDecision) {
@@ -80,7 +79,7 @@ export default function useDecisionPlayback({
       updatePhaseRemainingMs(nextDecision.durationMs);
       setActiveDecision(nextDecision);
     },
-    [activeDecision, decisions, updatePhaseRemainingMs],
+    [activeDecision, decisions, presentationDelayMs, updatePhaseRemainingMs],
   );
 
   const handleSelectOption = useCallback(
@@ -103,6 +102,17 @@ export default function useDecisionPlayback({
     [activeDecision, phase, updatePhaseRemainingMs],
   );
 
+  const resetToCompletedAnswers = useCallback(() => {
+    completedDecisionIds.current = new Set(
+      answers.map(answer => answer.decisionId),
+    );
+    setActiveDecision(undefined);
+    setPhase('choosing');
+    setUserChoiceId(undefined);
+    setUrgent(false);
+    updatePhaseRemainingMs(0);
+  }, [answers, updatePhaseRemainingMs]);
+
   useEffect(() => {
     if (!activeDecision || !timerRunning || phaseRemainingMsRef.current === 0) {
       return;
@@ -110,8 +120,12 @@ export default function useDecisionPlayback({
 
     const startedAt = Date.now();
     const startingRemainingMs = phaseRemainingMsRef.current;
+    let timerCompleted = false;
     const completionTimeout = setTimeout(
-      () => updatePhaseRemainingMs(0),
+      () => {
+        timerCompleted = true;
+        updatePhaseRemainingMs(0);
+      },
       startingRemainingMs,
     );
     const urgentDelayMs =
@@ -121,7 +135,7 @@ export default function useDecisionPlayback({
     const urgentTimeout =
       urgentDelayMs > 0
         ? setTimeout(() => {
-            phaseRemainingMsRef.current = activeDecision.urgentAtMs;
+            updatePhaseRemainingMs(activeDecision.urgentAtMs);
             setUrgent(true);
           }, urgentDelayMs)
         : undefined;
@@ -131,15 +145,22 @@ export default function useDecisionPlayback({
       if (urgentTimeout) {
         clearTimeout(urgentTimeout);
       }
-      phaseRemainingMsRef.current = Math.max(
+
+      // A completed timer starts the next phase. Do not let this timer's
+      // cleanup overwrite the duration assigned to that next phase.
+      if (timerCompleted) {
+        return;
+      }
+
+      const remainingMs = Math.max(
         0,
         startingRemainingMs - (Date.now() - startedAt),
       );
+      updatePhaseRemainingMs(remainingMs);
     };
   }, [
     activeDecision,
     phase,
-    phaseRemainingMs,
     timerRunning,
     updatePhaseRemainingMs,
   ]);
@@ -178,7 +199,7 @@ export default function useDecisionPlayback({
 
   const progress =
     activeDecision && phase === 'choosing'
-      ? phaseRemainingMs / activeDecision.durationMs
+      ? phaseRemainingMsRef.current / activeDecision.durationMs
       : 0;
 
   return {
@@ -192,5 +213,6 @@ export default function useDecisionPlayback({
     answers,
     handleProgress,
     handleSelectOption,
+    resetToCompletedAnswers,
   };
 }

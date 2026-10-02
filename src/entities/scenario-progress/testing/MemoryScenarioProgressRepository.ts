@@ -1,21 +1,28 @@
 import type { ScenarioProgress } from '../model/types';
 import type { ScenarioProgressRepository } from '../repository/ScenarioProgressRepository';
 
+const cloneScenarioProgress = (
+  progress: ScenarioProgress,
+): ScenarioProgress => ({
+  ...progress,
+  answers: progress.answers.map(answer => ({ ...answer })),
+});
+
 export default class MemoryScenarioProgressRepository
   implements ScenarioProgressRepository
 {
   private readonly progressByScenarioId = new Map<string, ScenarioProgress>();
 
   get(scenarioId: string): Promise<ScenarioProgress | null> {
-    return Promise.resolve(this.progressByScenarioId.get(scenarioId) ?? null);
+    const progress = this.progressByScenarioId.get(scenarioId);
+    return Promise.resolve(progress ? cloneScenarioProgress(progress) : null);
   }
 
   save(progress: ScenarioProgress): Promise<void> {
-    this.progressByScenarioId.set(progress.scenarioId, {
-      ...progress,
-      completedDecisionIds: [...progress.completedDecisionIds],
-      answers: progress.answers.map(answer => ({ ...answer })),
-    });
+    this.progressByScenarioId.set(
+      progress.scenarioId,
+      cloneScenarioProgress(progress),
+    );
     return Promise.resolve();
   }
 

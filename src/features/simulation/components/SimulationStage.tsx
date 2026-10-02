@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { appColors } from '../../../theme/colors';
+import { appColors, withAlpha } from '../../../theme/colors';
 
 export default function SimulationStage({
   background,
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 24,
     backgroundColor: appColors.background,
-    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+    boxShadow: `0 25px 50px -12px ${withAlpha(appColors.black, 0.25)}`,
   },
   background: {
     ...StyleSheet.absoluteFill,

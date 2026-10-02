@@ -1,5 +1,7 @@
 import type { DnaResult } from '../model/types';
 
+// Figma placeholder copy: archetype, patterns and blind spot are not derived
+// from the user's answers yet. Only `traits` is replaced with calculated data.
 export const demoDnaResult: DnaResult = {
   archetype: {
     id: 'brave-visionary',

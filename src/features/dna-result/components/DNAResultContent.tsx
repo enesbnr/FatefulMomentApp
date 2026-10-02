@@ -8,12 +8,11 @@ import PsychologicalMatrixCard from './PsychologicalMatrixCard';
 
 type Props = {
   result: DnaResult;
-  left: number;
 };
 
-export default function DNAResultContent({ result, left }: Props) {
+export default function DNAResultContent({ result }: Props) {
   return (
-    <View style={[styles.content, { left }]}>
+    <View style={styles.content}>
       <View style={styles.leftColumn}>
         <ArchetypeCard archetype={result.archetype} />
         <PsychologicalMatrixCard scores={result.traits} />
@@ -28,21 +27,18 @@ export default function DNAResultContent({ result, left }: Props) {
 
 const styles = StyleSheet.create({
   content: {
-    position: 'absolute',
-    top: 77,
     width: dnaResultLayout.contentWidth,
-    height: dnaResultLayout.contentHeight,
+    minHeight: dnaResultLayout.contentHeight,
     flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: dnaResultLayout.columnGap,
   },
   leftColumn: {
     width: dnaResultLayout.columnWidth,
-    height: '100%',
     gap: 16,
   },
   rightColumn: {
     width: dnaResultLayout.columnWidth,
-    height: '100%',
     gap: 16,
   },
 });

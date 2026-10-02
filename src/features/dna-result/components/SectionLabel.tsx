@@ -1,4 +1,8 @@
+import { type ComponentType } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import DnaIcon from '../../../../assets/dna-result/icons/dna.svg';
+import PatternIcon from '../../../../assets/dna-result/icons/pattern.svg';
+import TargetIcon from '../../../../assets/dna-result/icons/target.svg';
 import { dnaResultColors, monoFont } from './dnaResult.constants';
 
 type Props = {
@@ -7,10 +11,26 @@ type Props = {
   danger?: boolean;
 };
 
+const sectionIcons: Record<
+  Props['icon'],
+  ComponentType<{ width: number; height: number; testID?: string }>
+> = {
+  dna: DnaIcon,
+  pattern: PatternIcon,
+  target: TargetIcon,
+};
+
 export default function SectionLabel({ icon, label, danger = false }: Props) {
+  const Icon = sectionIcons[icon];
+  const iconSize = icon === 'dna' ? 10 : 12;
+
   return (
     <View style={styles.container}>
-      <View style={styles.iconSlot} testID={`dna-section-${icon}-icon-slot`} />
+      <Icon
+        width={iconSize}
+        height={iconSize}
+        testID={`dna-section-${icon}-icon`}
+      />
       <Text style={[styles.label, danger && styles.danger]}>{label}</Text>
     </View>
   );
@@ -22,11 +42,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  iconSlot: {
-    width: 12,
-    height: 12,
-    flexShrink: 0,
   },
   label: {
     fontFamily: monoFont,

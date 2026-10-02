@@ -1,3 +1,4 @@
+import { fontFamilies } from '../../theme/typography';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import ScenariosActiveIcon from '../../../assets/navigation/sidebar/icons/scenarios.svg';
@@ -5,13 +6,14 @@ import ScenariosPassiveIcon from '../../../assets/navigation/sidebar/icons/scena
 import DNAActiveIcon from '../../../assets/navigation/sidebar/icons/dna-active.svg';
 import DNAPassiveIcon from '../../../assets/navigation/sidebar/icons/dna.svg';
 import SettingsIcon from '../../../assets/navigation/sidebar/icons/settings.svg';
-import useLeftDrawerInset from '../hooks/useLeftDrawerInset';
+import { useGameplaySafeArea } from '../../app/providers/GameplaySafeAreaProvider';
+import { appColors, withAlpha } from '../../theme/colors';
 
 export default function AppDrawerContent({
   navigation,
   state,
 }: DrawerContentComponentProps) {
-  const leftDrawerInset = useLeftDrawerInset();
+  const { leftObstruction } = useGameplaySafeArea();
   const activeRoute = state.routeNames[state.index];
 
   const openScenarios = () => {
@@ -19,12 +21,16 @@ export default function AppDrawerContent({
     navigation.closeDrawer();
   };
   const openDNA = () => {
+    // Reset a briefing/video stack before leaving Scenarios. Doing this
+    // explicitly avoids Drawer dispatching POP_TO_TOP while Home is already
+    // the only route in the nested stack.
+    navigation.navigate('Scenarios', { screen: 'Home' });
     navigation.navigate('DNAResult');
     navigation.closeDrawer();
   };
 
   return (
-    <View style={[styles.screen, { paddingLeft: leftDrawerInset }]}> 
+    <View style={[styles.screen, { paddingLeft: leftObstruction }]}>
       <View style={styles.layout}>
         <DrawerLink
           label="SCENARIOS"
@@ -91,10 +97,10 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(2, 6, 24, 0.95)',
+    backgroundColor: withAlpha(appColors.background, 0.95),
     borderLeftWidth: 0.75873,
-    borderLeftColor: '#1D293D',
-    shadowColor: '#000000',
+    borderLeftColor: appColors.cardBorder,
+    shadowColor: appColors.black,
     shadowOffset: { width: 0, height: 25 },
     shadowOpacity: 0.25,
     shadowRadius: 25,
@@ -116,23 +122,23 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   linkActive: {
-    backgroundColor: 'rgba(0, 184, 219, 0.1)',
-    borderColor: 'rgba(0, 184, 219, 0.3)',
+    backgroundColor: withAlpha(appColors.link, 0.1),
+    borderColor: withAlpha(appColors.link, 0.3),
   },
   linkPassive: {
-    backgroundColor: 'rgba(15, 23, 43, 0.4)',
-    borderColor: 'rgba(29, 41, 61, 0.5)',
+    backgroundColor: withAlpha(appColors.surfaceElevated, 0.4),
+    borderColor: withAlpha(appColors.cardBorder, 0.5),
   },
   label: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: -0.500391,
-    color: '#90A1B9',
+    color: appColors.textSecondary,
     includeFontPadding: false,
   },
   labelActive: {
-    color: '#00D3F3',
+    color: appColors.accent,
   },
   activeDot: {
     position: 'absolute',
@@ -141,6 +147,6 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#00D3F3',
+    backgroundColor: appColors.accent,
   },
 });

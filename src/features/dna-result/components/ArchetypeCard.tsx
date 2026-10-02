@@ -1,3 +1,5 @@
+import { appColors, withAlpha } from '../../../theme/colors';
+import { fontFamilies } from '../../../theme/typography';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import type { DnaResult } from '../model/types';
 import { dnaResultColors } from './dnaResult.constants';
@@ -11,9 +13,9 @@ export default function ArchetypeCard({ archetype }: Props) {
     <View style={styles.card} testID="dna-archetype-card">
       <Image source={archetype.portrait} resizeMode="cover" style={styles.portrait} />
       <View style={styles.copy}>
-        <Text numberOfLines={1} style={styles.title}>{archetype.title}</Text>
+        <Text style={styles.title}>{archetype.title}</Text>
         <View style={styles.summaryFrame}>
-          <Text numberOfLines={3} style={styles.summary}>{archetype.summary}</Text>
+          <Text style={styles.summary}>{archetype.summary}</Text>
         </View>
       </View>
     </View>
@@ -23,7 +25,7 @@ export default function ArchetypeCard({ archetype }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 82,
+    minHeight: 82,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderWidth: 1,
-    borderColor: 'rgba(0, 184, 219, 0.2)',
+    borderColor: withAlpha(appColors.link, 0.2),
     borderRadius: 16,
     backgroundColor: dnaResultColors.background,
   },
@@ -47,8 +49,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    height: 24,
-    fontFamily: 'Inter-Bold',
+    minHeight: 24,
+    fontFamily: fontFamilies.bold,
     fontStyle: 'italic',
     fontSize: 16,
     lineHeight: 24,
@@ -57,13 +59,13 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   summaryFrame: {
-    height: 33,
+    minHeight: 33,
     paddingLeft: 4,
     borderLeftWidth: 1,
-    borderLeftColor: 'rgba(0, 184, 219, 0.4)',
+    borderLeftColor: withAlpha(appColors.link, 0.4),
   },
   summary: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 8,
     lineHeight: 11,
     color: dnaResultColors.muted,

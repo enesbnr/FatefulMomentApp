@@ -1,102 +1,34 @@
 # Fateful Moment
 
-Fateful Moment, kullanıcının tarihsel senaryoları deneyimlediği, video sırasında süreli kararlar verdiği ve seçimlerinin sonucunda bir DNA profili oluşturduğu React Native uygulamasıdır.
-
-Proje React Native CLI ile geliştirilir ve iOS ile Android platformlarını destekler.
-
-## Uygulama akışı
+Fateful Moment, kullanıcının tarihsel senaryoları video üzerinden deneyimlediği, süreli kararlar verdiği ve seçimlerinin sonucunda bir DNA profili gördüğü React Native uygulamasıdır.
 
 ```text
-Auth → Home → Simulation Briefing → Scenario Video → DNA Result
-                                      └─ Süreli kararlar
+Auth → Home → Briefing → Scenario Video → DNA Result
 ```
 
-- **Auth:** Giriş ve kayıt akışlarını yönetir.
-- **Home:** Senaryoları yatay ve sanallaştırılmış bir listede gösterir.
-- **Simulation Briefing:** Seçilen senaryonun başlığını, açıklamasını ve başlangıç aksiyonunu sunar.
-- **Scenario Video:** Videoyu oynatır ve senaryo verisinde belirtilen zamanlarda karar katmanını açar.
-- **DNA Result:** Kullanıcının kararlarından oluşan sonucu gösterir.
-
-## Mimari yaklaşım
-
-Kod tabanı feature-first yapıda düzenlenmiştir. Bir kullanıcı davranışına ait ekranlar, hook'lar, bileşenler ve testler aynı feature altında tutulur. Ortak domain modelleri `entities`, uygulama seviyesindeki provider'lar `app`, genel tema değerleri `theme`, navigasyon yapısı ise `navigation` altında bulunur.
-
-```text
-src/
-├── app/                 # Uygulama seviyesindeki provider'lar
-├── entities/            # Scenario ve scenario progress domain modelleri
-├── features/
-│   ├── auth/
-│   ├── home/
-│   ├── simulation/
-│   └── dna-result/
-├── navigation/          # Typed route ve drawer/stack navigasyonu
-├── shared/              # Feature bağımsız ortak bileşenler
-└── theme/               # Renk, ölçü ve tipografi sabitleri
-```
-
-Bu düzen, bir özelliğin ilgili parçalarını birbirine yakın tutar. Ortak kod yalnızca gerçekten birden fazla feature tarafından kullanıldığında `shared` veya `entities` katmanına taşınır.
-
-## Senaryo verisi
-
-Senaryo ekranlarının kullandığı içerik tek bir scenario modeli üzerinden taşınır. Home kartı, briefing ekranı, video kaynağı, karar zamanları ve DNA sonucu aynı `scenarioId` ile ilişkilendirilir.
-
-Route parametreleri typed olarak tanımlanmıştır. Yeni bir route parametresi eklendiğinde TypeScript, güncellenmesi gereken kullanım noktalarını derleme aşamasında gösterir.
-
-## Video karar sistemi
-
-Kararlar scenario verisinde tanımlanan zamanlara göre açılır. Her karar şunları içerir:
-
-- videoda açılacağı zaman,
-- karar verme süresi,
-- acil durum görünümünün başlayacağı eşik,
-- seçenekler ve seçeneklerin DNA etkileri.
-
-Karar katmanı video ekranının üzerinde gösterilir. Karar açıldığında video durur; seçim tamamlandıktan sonra aynı video devam eder. Kullanıcı süre içinde seçim yapmazsa karar sıfır DNA etkisiyle cevapsız kaydedilir, tarihsel gerçek seçenek kısa süre gösterilir ve video otomatik devam eder. Böylece video ayrı ekranlara bölünmeden tek playback oturumu korunur.
-
-## Video resume ve ilerleme kaydı
-
-Video ilerlemesi `scenarioId` bazında cihazda saklanır. Kayıt şu bilgileri içerir:
-
-- videoda kalınan saniye,
-- video süresi,
-- tamamlanan kararlar,
-- verilen cevaplar,
-- senaryonun devam ediyor veya tamamlanmış olma durumu.
-
-Uygulama aynı senaryoya tekrar girdiğinde video kaydedilen konuma gider. Tamamlanmış kararlar yeniden gösterilmez. Kullanıcı aktif bir karar sırasında çıkmışsa ilgili karar tekrar açılır ve karar süresi baştan başlar. Video tamamlandığında kayıt `completed` olarak işaretlenir ve DNA sonucuna geçilir.
-
-İlerleme verisi doğrudan ekran bileşeninden AsyncStorage'a yazılmaz. Erişim aşağıdaki repository sözleşmesi üzerinden yapılır:
-
-```text
-ScenarioVideoScreen
-  → useScenarioResume
-    → ScenarioProgressRepository
-      → AsyncStorageScenarioProgressRepository
-```
-
-Bu sınır sayesinde ileride API eklendiğinde ekran ve playback mantığını değiştirmeden yeni bir repository implementasyonu kullanılabilir. Testlerde aynı sözleşmenin bellek içi implementasyonu kullanılır.
-
-Otomatik ilerleme kayıtları gereksiz disk yazımını azaltmak için aralıklı yapılır. Uygulama arka plana geçtiğinde, kullanıcı geri çıktığında ve cevap değiştiğinde bekleyen veri ayrıca kaydedilir.
-
-## Platform ve lifecycle kararları
-
-- **Cevapsız karar:** Karar süresi seçim yapılmadan biterse cevap `optionId: null` olarak kaydedilir. Bu kayıt sıfır DNA etkisini temsil eder. Tarihsel gerçek seçenek kısa süre gösterildikten sonra video devam eder ve resume sırasında aynı karar yeniden açılmaz.
-- **iOS gizlilik anahtarları:** Uygulamanın kullanmadığı izin anahtarları `Info.plist` içinde tutulmaz. Konum servisi kullanılmadığı için boş `NSLocationWhenInUseUsageDescription` kaydı kaldırılmıştır.
-- **Android ekran yönü:** `MainActivity`, manifest seviyesinde belirli bir yöne kilitlenmez. `screenOrientation="unspecified"` kullanılır; Auth için portrait, gameplay için landscape yönü navigation boundary'leri üzerinden runtime'da yönetilir.
-- **Navigation component kimliği:** Stack ekranları, Home route’u ve drawer content modül seviyesindeki sabit component referanslarıyla tanımlanır. Değişken auth verisi Context üzerinden aktarılır. Böylece üst state güncellemeleri alt navigatörleri gereksiz yere unmount etmez.
-
-## Medya yönetimi
-
-Home carousel'i yatay `FlatList` kullanır. Uzakta kalan kartlar sanallaştırılır. Aynı anda bütün senaryolar için video player oluşturulmaz; yalnızca aktif kart video bileşenini bağlayabilir, diğer kartlar poster görseli gösterir.
-
-Senaryo videosu için `react-native-video`, yerel ilerleme kaydı için `@react-native-async-storage/async-storage` kullanılır.
+Proje React Native CLI ile geliştirilmiştir ve iOS ile Android'i destekler.
 
 ## Kurulum
 
-Gereksinimler:
+### Android APK kurulumu
 
-- Node.js
+Teslim edilen `FatefulMoment-v1.0-release.apk` dosyasını Android cihaza aktarın. Dosyayı cihazın dosya yöneticisinden açın ve kurulum adımlarını izleyin. Android isterse dosyayı açtığınız uygulama için **Bilinmeyen uygulamaları yükleme** iznini etkinleştirin; kurulum tamamlandıktan sonra bu izni tekrar kapatabilirsiniz.
+
+ADB kurulu bir bilgisayardan yüklemek için cihazda USB hata ayıklamayı etkinleştirip şu komutu çalıştırabilirsiniz:
+
+```sh
+adb install -r FatefulMoment-v1.0-release.apk
+```
+
+`-r`, cihazda uygulamanın önceki bir sürümü varsa kullanıcı verisini koruyarak günceller. İmza uyuşmazlığı nedeniyle kurulum reddedilirse eski sürümü cihazdan kaldırıp APK'yı yeniden kurun.
+
+APK bağımsız bir release build'dir; çalışması için Metro'nun açık olması gerekmez.
+
+### Kaynak koddan çalıştırma
+
+#### Gereksinimler
+
+- Node.js `22.11.0` veya üzeri
 - npm
 - iOS için Xcode ve CocoaPods
 - Android için Android Studio ve Android SDK
@@ -107,7 +39,9 @@ Bağımlılıkları yükleyin:
 npm install
 ```
 
-iOS podlarını yükleyin:
+`npm install` sonrasında `postinstall`, projede kullanılan orientation ve Android video düzeltmelerini otomatik uygular.
+
+iOS bağımlılıklarını yükleyin:
 
 ```sh
 cd ios
@@ -115,31 +49,34 @@ pod install
 cd ..
 ```
 
-Native bir bağımlılık eklendiğinde yalnızca Metro reload yeterli değildir; uygulama yeniden build edilmelidir.
-
-## Çalıştırma
-
-Metro:
+Metro'yu başlatın:
 
 ```sh
 npm start
 ```
 
-iOS:
+Başka bir terminalde uygulamayı çalıştırın:
 
 ```sh
 npm run ios
 ```
 
-Android:
+veya:
 
 ```sh
 npm run android
 ```
 
-Metro'nun `8081` portu zaten kullanılıyorsa ikinci bir Metro başlatmak yerine çalışan süreci kullanın.
+Native bir bağımlılık ya da native patch değiştiğinde Metro reload yeterli değildir; uygulamanın yeniden build edilmesi gerekir.
 
-## Doğrulama
+### Test hesabı
+
+```text
+E-posta: test@test.com
+Şifre:   ABcd1234
+```
+
+### Kontroller
 
 ```sh
 npx tsc --noEmit
@@ -147,29 +84,51 @@ npm run lint
 npm test -- --runInBand
 ```
 
-Native build doğrulaması:
+## Yaklaşım
 
-```sh
-cd android
-./gradlew assembleDebug
-```
+Kod tabanı feature-first yapıda düzenlenmiştir. Auth, Home, Simulation ve DNA Result akışlarının ekranları, hook'ları, bileşenleri ve testleri kendi feature klasörlerinde tutulur. Ortak domain modelleri `entities`, uygulama seviyesindeki provider'lar `app`, ortak arayüz parçaları `shared`, tema değerleri `theme` ve route tanımları `navigation` altında bulunur.
 
-```sh
-cd ios
-xcodebuild \
-  -workspace FatefulMomentApp.xcworkspace \
-  -scheme FatefulMomentApp \
-  -configuration Debug \
-  -sdk iphonesimulator \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-```
+Senaryo içeriği tek bir model üzerinden Home kartına, briefing ekranına, ana videoya, karar zamanlarına ve DNA sonucuna taşınır. Navigation parametreleri TypeScript ile tiplenmiştir.
 
-## Test hesabı
+Video sırasında karar açıldığında oynatma durur. Seçim yapıldığında veya süre dolduğunda karar kaydedilir ve video devam eder. İlerleme `ScenarioProgressRepository` sözleşmesi üzerinden AsyncStorage'da tutulur. Kullanıcı senaryoya döndüğünde video, son tamamlanan kararın ardından güvenli bir checkpoint'ten devam eder. Geçici okuma hatası ile bozuk kayıt birbirinden ayrılır; bozuk kayıt temizlenirken geçici hatada kullanıcıya yeniden deneme sunulur.
 
-Yerel geliştirme akışında kullanılabilen test hesabı:
+Home carousel'i sanallaştırılmış yatay `FlatList` kullanır. Yerel demoda ilk 15 kart preview gösterebilir; görünür kartlar arasından en fazla beş native video player oluşturulur, diğer kartlar poster olarak kalır. Bir kart player sınırından çıktığında preview konumu `scenarioId` üzerinden bellekte tutulur ve kart yeniden aktif olduğunda kaldığı yerden devam eder. Bu geçici durum senaryo ilerlemesine yazılmaz ve uygulama kapanınca silinir. Home focus kaybettiğinde veya uygulama arka plana geçtiğinde preview player'ları kaldırılır. Seçilen görünür kartın sesi açılır. Tamamlanan senaryolar listenin sonuna taşınır ve yeniden seçilemez.
 
-```text
-E-posta: test@test.com
-Şifre:   ABcd1234
-```
+Beş eşzamanlı native video player, özellikle düşük donanımlı cihazlarda bellek tüketimi, ısınma, kare düşmesi veya uygulamanın kapanması gibi performans sorunlarına yol açabilir. Bu değer yerel demo ve teslim cihazındaki görsel deneyim için seçilmiştir. Gerçek API entegrasyonunda carousel için ana videodan ayrı, kısa süreli, düşük çözünürlüklü ve düşük bitrate'li preview dosyaları sağlanmalıdır. Eşzamanlı player sınırı da gerçek cihaz ölçümlerine göre düşürülebilmeli; aktif sınırın dışındaki kartlar poster göstermeye devam etmelidir.
+
+Responsive yerleşimde ortak safe-area verisi kullanılır; her ekran bu veriyi kendi Figma ölçülerine göre uygular. Böylece landscape görünümde çentik veya Dynamic Island korunurken ekranların tasarımı tek bir genel wrapper tarafından değiştirilmez.
+
+## Geliştirilebilecekler
+
+- **Medya optimizasyonu:** Demo için aynı anda en fazla beş preview oynatılır. Düşük donanımlı cihazlarda oluşabilecek performans sorunları, API'den kısa, düşük çözünürlüklü ve düşük bitrate'li preview dosyaları alınarak azaltılabilir. Player sınırı gerçek cihaz ölçümlerine göre ayarlanabilir.
+- **Medya cache:** API'den uzak medya gelmeye başladığında görünür ve yakındaki preview dosyaları TTL/LRU politikalarıyla sınırlı bir disk cache içinde tutulabilir.
+- **Çoklu oynatma:** Oyun akışında tekrar hakkı belirtilmediği için tamamlanan senaryolar şu an kilitlenir. Yeniden oynatma istenirse her deneme ayrı bir `attemptId` ile saklanarak eski sonuçların ezilmesi önlenebilir.
+- **Responsive ve erişilebilirlik:** Uzun API metinleri, büyük yazı ayarları, dar landscape ekranlar ve farklı çentik yapıları daha geniş bir cihaz grubunda test edilebilir. İçerik sığmadığında scroll açılıp sığdığında Figma görünümü korunabilir.
+- **Performans takibi:** Video, buffering, resume, cache ve API hataları ölçülebilir. Player, buffer ve cache ayarları gerçek cihaz verilerine göre belirlenebilir.
+
+## Kullanılan AI araçları
+
+Geliştirme sürecinde **OpenAI Codex**, **Antigravity** ve **Claude** yardımcı araç olarak kullanıldı. İlk aşamada aynı Figma auth ekranı Codex ve Antigravity'ye verilerek oluşturdukları yaklaşımlar karşılaştırıldı ve tasarıma daha yakın sonuç veren çözüm üzerinden geliştirmeye devam edildi.
+
+Codex daha sonra şu işler için kullanıldı:
+
+- mevcut kodu ve hata akışlarını incelemek,
+- olası edge case'leri ve test senaryolarını belirlemek,
+- React Native video lifecycle, AsyncStorage ve responsive yerleşim çözümlerini tartışmak,
+- unit ve integration testleri hazırlamak,
+- alternatif çözüm yollarını karşılaştırmak ve uygulanan teknik kararları doğrulamak.
+
+Geliştirmenin son aşamasında test kapsamı ve olası eksikler Antigravity, Claude ve Codex ile ayrı ayrı kontrol edildi. Ortaya çıkan öneriler karşılaştırıldı; projeyle doğrulanan maddeler uygulanırken kapsam veya tasarım gereksinimleriyle uyuşmayan öneriler alınmadı.
+
+AI çıktıları doğrudan kabul edilmedi. Öneriler proje gereksinimleri ve Figma tasarımlarıyla karşılaştırıldı; kod değişiklikleri TypeScript, ESLint, Jest ve gerçek cihaz/emülatör kontrolleriyle doğrulandı. Android video taşması gibi platforma özel sorunlarda davranış önce cihazda yeniden üretildi, ardından uygulanan native düzeltme ayrıca build edilerek kontrol edildi.
+
+## Notlar
+
+- Auth akışı demo amaçlıdır. Başarılı giriş yalnızca çalışan uygulama oturumu boyunca geçerlidir; uygulama yeniden başlatıldığında Auth ekranı açılır. Tasarımda logout veya hesap yönetimi bulunmadığı için dummy session kalıcı olarak saklanmaz.
+- Senaryo verileri ve medya dosyaları yereldir. İlk 15 kart, preview lifecycle ve liste performansını göstermek için aynı paketlenmiş videoyu farklı senaryo kayıtları üzerinden kullanır.
+- DNA radar grafiği ve altı trait skoru kayıtlı cevaplardan hesaplanır. Archetype, pattern ve blind-spot metinleri API veya yorumlama kuralları sağlanmadığı için Figma'dan alınan sabit demo içeriğidir.
+- Senaryolar tek oynatma kuralına sahiptir. Tamamlanan kart kilitlenir; çoklu attempt geçmişi tutulmaz.
+- Uzak medya cache/prefetch sistemi henüz uygulanmamıştır. Gerçek API'nin URL, format, CDN ve medya sürümleme sözleşmesi belli olduktan sonra gerçek cihaz ölçümlerine göre tasarlanmalıdır.
+- `react-native-video@6.19.2` sürümündeki Android `TextureView` problemi `scripts/patch-react-native-video.js` ile `postinstall` sırasında düzeltilir. Paket sürümü değiştirilirse patch yeniden değerlendirilmelidir.
+
+Daha ayrıntılı dosya ve sorumluluk açıklamaları için [`docs/code-review-guide.md`](docs/code-review-guide.md) kullanılabilir.

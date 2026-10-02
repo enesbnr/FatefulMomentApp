@@ -1,17 +1,18 @@
+import { appColors, withAlpha } from './colors';
+import { fontFamilies } from './typography';
 import { StyleSheet } from 'react-native';
-import { appColors } from './colors';
 
 export const colors = {
   background: appColors.background,
   white: appColors.white,
   cyan: appColors.accent,
-  subtitle: '#90A1B9',
+  subtitle: appColors.textSecondary,
   dividerText: appColors.textMuted,
-  dividerLine: 'rgba(255, 255, 255, 0.1)',
-  emailBackground: 'rgba(0, 211, 243, 0.14)',
-  socialBackground: 'rgba(17, 24, 39, 0.8)',
-  legalLink: '#00B8DB',
-  legalBody: '#6A7282',
+  dividerLine: withAlpha(appColors.white, 0.1),
+  emailBackground: withAlpha(appColors.accent, 0.14),
+  socialBackground: withAlpha(appColors.surfaceSocial, 0.8),
+  legalLink: appColors.link,
+  legalBody: appColors.textSubtle,
 };
 
 // Confirmed Figma spacing; header bottom is derived from 248 - (184 + 57).
@@ -46,14 +47,14 @@ export const effects = StyleSheet.create({
         offsetY: 20,
         blurRadius: 25,
         spreadDistance: -5,
-        color: 'rgba(0, 0, 0, 0.1)',
+        color: withAlpha(appColors.black, 0.1),
       },
       {
         offsetX: 0,
         offsetY: 8,
         blurRadius: 10,
         spreadDistance: -6,
-        color: 'rgba(0, 0, 0, 0.1)',
+        color: withAlpha(appColors.black, 0.1),
       },
     ],
   },
@@ -72,7 +73,7 @@ export const layout = {
 
 export const typography = StyleSheet.create({
   authLandingTitle: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 20,
     lineHeight: 25,
     letterSpacing: 0,
@@ -81,7 +82,7 @@ export const typography = StyleSheet.create({
     includeFontPadding: false,
   },
   authLandingSubtitle: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 16,
     lineHeight: 24,
     letterSpacing: 0,
@@ -90,14 +91,14 @@ export const typography = StyleSheet.create({
     includeFontPadding: false,
   },
   authButtonLabel: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: fontFamilies.medium,
     fontSize: 16,
     lineHeight: 24,
     color: colors.white,
     includeFontPadding: false,
   },
   authDividerText: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 13,
     lineHeight: 20,
     letterSpacing: 0.65,
@@ -106,7 +107,7 @@ export const typography = StyleSheet.create({
     includeFontPadding: false,
   },
   authLegalText: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 13,
     lineHeight: 20,
     letterSpacing: 0,

@@ -1,5 +1,6 @@
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { appColors } from '../../../theme/colors';
+import { fontFamilies } from '../../../theme/typography';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { appColors, withAlpha } from '../../../theme/colors';
 
 type SimulationBriefingProps = {
   title: string;
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eyebrow: {
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontFamily: fontFamilies.mono,
     fontWeight: '700',
     fontSize: 11,
     lineHeight: 16,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   title: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontStyle: 'italic',
     fontSize: 28,
     lineHeight: 34,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   description: {
     width: '100%',
     height: 40,
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
@@ -98,10 +99,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    backgroundColor: 'rgba(0,184,219,0.14)',
+    backgroundColor: withAlpha(appColors.link, 0.14),
   },
   buttonLabel: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: fontFamilies.bold,
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',

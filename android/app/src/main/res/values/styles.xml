@@ -13,4 +13,8 @@
         <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 
+    <style name="AppTheme.Splash" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+    </style>
+
 </resources>

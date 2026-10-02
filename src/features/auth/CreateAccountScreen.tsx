@@ -1,3 +1,4 @@
+import { fontFamilies } from '../../theme/typography';
 import {
   useCallback,
   useEffect,
@@ -25,11 +26,14 @@ import CheckNotIcon from '../../../assets/auth/check-not.svg';
 import CheckYesIcon from '../../../assets/auth/check-yes.svg';
 import EyeNotIcon from '../../../assets/auth/eye-not.svg';
 import EyeIcon from '../../../assets/auth/eye.svg';
-import { colors, layout } from '../../theme/authLanding';
+import {
+  colors,
+  getContentTopSpacing,
+  layout,
+} from '../../theme/authLanding';
 import {
   emailSpacing,
   emailTypography,
-  getEmailContentTop,
 } from '../../theme/emailSignIn';
 import AuthButton from './components/AuthButton';
 import AuthHeader from './components/AuthHeader';
@@ -41,12 +45,7 @@ import {
   getFullNameError,
   getPasswordRequirements,
 } from './validation/authValidation';
-
-export type DummyAccount = {
-  fullName: string;
-  email: string;
-  password: string;
-};
+import type { DummyAccount } from './model/types';
 
 type Props = {
   onBack: () => void;
@@ -67,6 +66,7 @@ export default function CreateAccountScreen({
   const passwordFocusedRef = useRef(false);
   const keyboardTopRef = useRef<number | null>(null);
   const scrollYRef = useRef(0);
+  const scrollYBeforePasswordFocusRef = useRef(0);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -95,9 +95,14 @@ export default function CreateAccountScreen({
       requirementsView.measureInWindow((_x, y, _width, height) => {
         const requiredClearance = 46;
         const hiddenHeight = y + height + requiredClearance - keyboardTop;
-        if (hiddenHeight > 0) {
+        const targetScrollY = Math.max(
+          scrollYBeforePasswordFocusRef.current,
+          scrollYRef.current + hiddenHeight,
+        );
+
+        if (Math.abs(targetScrollY - scrollYRef.current) > 1) {
           scrollRef.current?.scrollTo({
-            y: scrollYRef.current + hiddenHeight,
+            y: targetScrollY,
             animated: true,
           });
         }
@@ -118,6 +123,16 @@ export default function CreateAccountScreen({
         keepRequirementsAboveKeyboard();
       }
     });
+    const keyboardFrameChanged = Keyboard.addListener(
+      'keyboardWillChangeFrame',
+      event => {
+        keyboardTopRef.current = event.endCoordinates.screenY;
+        setKeyboardHeight(event.endCoordinates.height);
+        if (passwordRef.current?.isFocused()) {
+          keepRequirementsAboveKeyboard();
+        }
+      },
+    );
     const keyboardHidden = Keyboard.addListener('keyboardDidHide', () => {
       if (!passwordFocusedRef.current) {
         setPasswordFocused(false);
@@ -126,6 +141,7 @@ export default function CreateAccountScreen({
 
     return () => {
       keyboardShown.remove();
+      keyboardFrameChanged.remove();
       keyboardHidden.remove();
     };
   }, [keepRequirementsAboveKeyboard]);
@@ -139,186 +155,187 @@ export default function CreateAccountScreen({
   const renderFormContent = () => (
     <>
       <View style={styles.width}>
-            <View style={styles.header}>
-              <AuthHeader title="Create your Fateful Moment Account" />
-              <View style={styles.back}>
-                <BackButton onPress={onBack} />
-              </View>
-            </View>
-            <View style={styles.form}>
-              <FormField
-                accessibilityLabel="Full Name"
-                placeholder="Full Name"
-                value={fullName}
-                onChangeText={setFullName}
-                autoCapitalize="words"
-                autoCorrect={false}
-                autoComplete="name"
-                returnKeyType="next"
-                submitBehavior="submit"
-                onSubmitEditing={() => emailRef.current?.focus()}
-                errorMessage={fullNameError}
-              />
-              <View
-                style={[
-                  styles.fieldGap,
-                  fullNameError && styles.fieldGapAfterError,
-                ]}
-              >
-                <FormField
-                  ref={emailRef}
-                  accessibilityLabel="Email"
-                  placeholder="Your email address"
-                  value={email}
-                  onChangeText={setEmail}
-                  inputMode="email"
-                  keyboardType="email-address"
-                  showSoftInputOnFocus
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  returnKeyType="next"
-                  submitBehavior="submit"
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                  errorMessage={emailError}
-                  helperFontFamily="Nunito"
-                />
-              </View>
-              <View
-                style={[
-                  styles.fieldGap,
-                  emailError && styles.fieldGapAfterError,
-                ]}
-              >
-                <FormField
-                  ref={passwordRef}
-                  accessibilityLabel="Password"
-                  placeholder="Your password"
-                  value={password}
-                  onChangeText={setPassword}
-                  onFocus={() => {
-                    passwordFocusedRef.current = true;
-                    setPasswordFocused(true);
+        <View style={styles.header}>
+          <AuthHeader title="Create your Fateful Moment Account" />
+          <View style={styles.back}>
+            <BackButton onPress={onBack} />
+          </View>
+        </View>
+        <View style={styles.form}>
+          <FormField
+            accessibilityLabel="Full Name"
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            autoCapitalize="words"
+            autoCorrect={false}
+            autoComplete="name"
+            returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            errorMessage={fullNameError}
+          />
+          <View
+            style={[
+              styles.fieldGap,
+              fullNameError && styles.fieldGapAfterError,
+            ]}
+          >
+            <FormField
+              ref={emailRef}
+              accessibilityLabel="Email"
+              placeholder="Your email address"
+              value={email}
+              onChangeText={setEmail}
+              inputMode="email"
+              keyboardType="email-address"
+              showSoftInputOnFocus
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              returnKeyType="next"
+              submitBehavior="submit"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              errorMessage={emailError}
+              helperFontFamily={fontFamilies.nunitoRegular}
+            />
+          </View>
+          <View
+            style={[styles.fieldGap, emailError && styles.fieldGapAfterError]}
+          >
+            <FormField
+              ref={passwordRef}
+              accessibilityLabel="Password"
+              placeholder="Your password"
+              value={password}
+              onChangeText={setPassword}
+              onFocus={() => {
+                if (!passwordFocusedRef.current) {
+                  scrollYBeforePasswordFocusRef.current = scrollYRef.current;
+                }
+                passwordFocusedRef.current = true;
+                setPasswordFocused(true);
+                if (Platform.OS === 'ios') {
+                  const keyboardMetrics = Keyboard.metrics();
+                  if (keyboardMetrics != null) {
+                    keyboardTopRef.current = keyboardMetrics.screenY;
+                    setKeyboardHeight(keyboardMetrics.height);
+                  }
+                  keepRequirementsAboveKeyboard();
+                }
+              }}
+              onBlur={() => {
+                requestAnimationFrame(() => {
+                  if (!passwordRef.current?.isFocused()) {
+                    passwordFocusedRef.current = false;
+                    setPasswordFocused(false);
                     if (Platform.OS === 'ios') {
-                      const keyboardMetrics = Keyboard.metrics();
-                      if (keyboardMetrics != null) {
-                        keyboardTopRef.current = keyboardMetrics.screenY;
-                        setKeyboardHeight(keyboardMetrics.height);
-                      }
-                      keepRequirementsAboveKeyboard();
+                      scrollRef.current?.scrollTo({
+                        y: scrollYBeforePasswordFocusRef.current,
+                        animated: true,
+                      });
                     }
-                  }}
-                  onBlur={() => {
-                    requestAnimationFrame(() => {
-                      if (!passwordRef.current?.isFocused()) {
-                        passwordFocusedRef.current = false;
-                        setPasswordFocused(false);
-                      }
-                    });
-                  }}
-                  secureTextEntry={!passwordVisible}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="new-password"
-                  returnKeyType="done"
-                  trailing={
-                    showPasswordControl ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          passwordVisible ? 'Hide password' : 'Show password'
-                        }
-                        onPress={() => setPasswordVisible(visible => !visible)}
-                        style={styles.eyeButton}
-                      >
-                        {passwordVisible ? (
-                          <EyeNotIcon
-                            width={18}
-                            height={18}
-                            preserveAspectRatio="xMidYMid meet"
-                          />
-                        ) : (
-                          <EyeIcon
-                            width={18}
-                            height={18}
-                            preserveAspectRatio="xMidYMid meet"
-                          />
-                        )}
-                      </Pressable>
-                    ) : null
                   }
-                />
-                {showPasswordRequirements && (
-                  <View
-                    ref={requirementsRef}
-                    style={styles.requirements}
-                    onLayout={keepRequirementsAboveKeyboard}
+                });
+              }}
+              secureTextEntry={!passwordVisible}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="new-password"
+              returnKeyType="done"
+              trailing={
+                showPasswordControl ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      passwordVisible ? 'Hide password' : 'Show password'
+                    }
+                    onPress={() => setPasswordVisible(visible => !visible)}
+                    style={styles.eyeButton}
                   >
-                    {requirements.map(requirement => {
-                      const CheckIcon = requirement.met
-                        ? CheckYesIcon
-                        : CheckNotIcon;
-                      return (
-                        <View style={styles.requirement} key={requirement.id}>
-                          <CheckIcon
-                            width={16}
-                            height={16}
-                            preserveAspectRatio="xMidYMid meet"
-                          />
-                          <Text
-                            style={[
-                              styles.requirementText,
-                              requirement.met && styles.requirementTextMet,
-                            ]}
-                          >
-                            {requirement.label}
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
+                    {passwordVisible ? (
+                      <EyeNotIcon
+                        width={18}
+                        height={18}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                    ) : (
+                      <EyeIcon
+                        width={18}
+                        height={18}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                    )}
+                  </Pressable>
+                ) : null
+              }
+            />
+            {showPasswordRequirements && (
+              <View
+                ref={requirementsRef}
+                style={styles.requirements}
+                onLayout={keepRequirementsAboveKeyboard}
+              >
+                {requirements.map(requirement => {
+                  const CheckIcon = requirement.met
+                    ? CheckYesIcon
+                    : CheckNotIcon;
+                  return (
+                    <View style={styles.requirement} key={requirement.id}>
+                      <CheckIcon
+                        width={16}
+                        height={16}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                      <Text
+                        style={[
+                          styles.requirementText,
+                          requirement.met && styles.requirementTextMet,
+                        ]}
+                      >
+                        {requirement.label}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
-              <View style={styles.submit}>
-                <AuthButton
-                  variant="primaryGlass"
-                  label="Sign up"
-                  disabled={!canSubmit}
-                  onPress={() =>
-                    onSubmit({
-                      fullName: fullName.trim(),
-                      email: email.trim(),
-                      password,
-                    })
-                  }
-                />
-              </View>
-            </View>
+            )}
           </View>
-          <View style={styles.spacer} />
-          <View style={[styles.width, styles.footer]}>
-            <Text style={emailTypography.secondary}>
-              Already have an account?
-            </Text>
-            <Pressable accessibilityRole="link" onPress={onSignIn}>
-              <Text style={emailTypography.switchLink}>Sign in</Text>
-            </Pressable>
+          <View style={styles.submit}>
+            <AuthButton
+              variant="primaryGlass"
+              label="Sign up"
+              disabled={!canSubmit}
+              onPress={() =>
+                onSubmit({
+                  fullName: fullName.trim(),
+                  email: email.trim(),
+                  password,
+                })
+              }
+            />
           </View>
+        </View>
+      </View>
+      <View style={styles.spacer} />
+      <View style={[styles.width, styles.footer]}>
+        <Text style={emailTypography.secondary}>Already have an account?</Text>
+        <Pressable accessibilityRole="link" onPress={onSignIn}>
+          <Text style={emailTypography.switchLink}>Sign in</Text>
+        </Pressable>
+      </View>
     </>
   );
 
   if (Platform.OS === 'ios') {
     return (
       <SafeAreaView style={styles.screen}>
-        <KeyboardAvoidingView
-          style={styles.keyboard}
-          behavior="padding"
-        >
+        <KeyboardAvoidingView style={styles.keyboard} behavior="padding">
           <ScrollView
             ref={scrollRef}
             contentContainerStyle={[
               styles.content,
-              { paddingTop: getEmailContentTop(insets.top) },
+              { paddingTop: getContentTopSpacing(insets.top) },
             ]}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
@@ -344,7 +361,7 @@ export default function CreateAccountScreen({
         bottomOffset={passwordFocused ? 168 : 24}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: getEmailContentTop(insets.top) },
+          { paddingTop: getContentTopSpacing(insets.top) },
         ]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -372,8 +389,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexShrink: 0,
   },
-  header: { paddingTop: emailSpacing.backToHeaderTop },
-  back: { position: 'absolute', top: 0, left: 0 },
+  header: { position: 'relative' },
+  back: {
+    position: 'absolute',
+    top: -emailSpacing.backToHeaderTop,
+    left: 0,
+  },
   form: { marginTop: 32 },
   fieldGap: { marginTop: 32 },
   fieldGapAfterError: { marginTop: 12 },
@@ -385,13 +406,13 @@ const styles = StyleSheet.create({
   },
   requirements: { marginTop: 16, gap: 4 },
   requirement: {
-    height: 16,
+    minHeight: 16,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
   },
   requirementText: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: fontFamilies.regular,
     fontSize: 11,
     lineHeight: 16,
     color: colors.subtitle,

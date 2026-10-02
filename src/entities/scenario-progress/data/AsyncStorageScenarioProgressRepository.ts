@@ -1,18 +1,39 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { ScenarioProgress } from '../model/types';
+import {
+  SCENARIO_PROGRESS_SCHEMA_VERSION,
+  type DecisionAnswer,
+  type ScenarioProgress,
+  type ScenarioProgressStatus,
+} from '../model/types';
 import type { ScenarioProgressRepository } from '../repository/ScenarioProgressRepository';
 import { getScenarioProgressStorageKey } from './scenarioProgressStorageKeys';
 
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every(item => typeof item === 'string');
+type LegacyScenarioProgressV1 = Omit<ScenarioProgress, 'schemaVersion'> & {
+  completedDecisionIds: string[];
+  schemaVersion?: 1;
+};
 
-const isScenarioProgress = (value: unknown): value is ScenarioProgress => {
+const isAnswers = (value: unknown): value is DecisionAnswer[] =>
+  Array.isArray(value) &&
+  value.every(
+    answer =>
+      Boolean(answer) &&
+      typeof answer === 'object' &&
+      typeof answer.decisionId === 'string' &&
+      (typeof answer.optionId === 'string' || answer.optionId === null),
+  );
+
+const isStatus = (value: unknown): value is ScenarioProgressStatus =>
+  value === 'in_progress' || value === 'completed';
+
+const hasValidProgressFields = (
+  value: unknown,
+): value is Omit<ScenarioProgress, 'schemaVersion'> => {
   if (!value || typeof value !== 'object') {
     return false;
   }
 
   const progress = value as Partial<ScenarioProgress>;
-
   return (
     typeof progress.scenarioId === 'string' &&
     typeof progress.positionSeconds === 'number' &&
@@ -21,19 +42,44 @@ const isScenarioProgress = (value: unknown): value is ScenarioProgress => {
     typeof progress.durationSeconds === 'number' &&
     Number.isFinite(progress.durationSeconds) &&
     progress.durationSeconds >= 0 &&
-    isStringArray(progress.completedDecisionIds) &&
-    Array.isArray(progress.answers) &&
-    progress.answers.every(
-      answer =>
-        Boolean(answer) &&
-        typeof answer === 'object' &&
-        typeof answer.decisionId === 'string' &&
-        (typeof answer.optionId === 'string' || answer.optionId === null),
-    ) &&
-    (progress.status === 'in_progress' || progress.status === 'completed') &&
-    typeof progress.updatedAt === 'number'
+    isAnswers(progress.answers) &&
+    isStatus(progress.status) &&
+    typeof progress.updatedAt === 'number' &&
+    Number.isFinite(progress.updatedAt)
   );
 };
+
+const isScenarioProgressV2 = (value: unknown): value is ScenarioProgress =>
+  hasValidProgressFields(value) &&
+  (value as Partial<ScenarioProgress>).schemaVersion ===
+    SCENARIO_PROGRESS_SCHEMA_VERSION;
+
+const isLegacyScenarioProgressV1 = (
+  value: unknown,
+): value is LegacyScenarioProgressV1 => {
+  if (!hasValidProgressFields(value)) {
+    return false;
+  }
+
+  const legacy = value as Partial<LegacyScenarioProgressV1>;
+  return (
+    (legacy.schemaVersion === undefined || legacy.schemaVersion === 1) &&
+    Array.isArray(legacy.completedDecisionIds) &&
+    legacy.completedDecisionIds.every(id => typeof id === 'string')
+  );
+};
+
+const normalizeProgress = (
+  progress: Omit<ScenarioProgress, 'schemaVersion'>,
+): ScenarioProgress => ({
+  schemaVersion: SCENARIO_PROGRESS_SCHEMA_VERSION,
+  scenarioId: progress.scenarioId,
+  positionSeconds: progress.positionSeconds,
+  durationSeconds: progress.durationSeconds,
+  answers: progress.answers.map(answer => ({ ...answer })),
+  status: progress.status,
+  updatedAt: progress.updatedAt,
+});
 
 export default class AsyncStorageScenarioProgressRepository
   implements ScenarioProgressRepository
@@ -46,14 +92,35 @@ export default class AsyncStorageScenarioProgressRepository
       return null;
     }
 
+    let parsedValue: unknown;
     try {
-      const parsedValue: unknown = JSON.parse(storedValue);
-
-      if (isScenarioProgress(parsedValue) && parsedValue.scenarioId === scenarioId) {
-        return parsedValue;
-      }
+      parsedValue = JSON.parse(storedValue);
     } catch {
-      // Invalid local data is removed below and treated as no saved progress.
+      await AsyncStorage.removeItem(key);
+      return null;
+    }
+
+    if (isScenarioProgressV2(parsedValue)) {
+      if (parsedValue.scenarioId !== scenarioId) {
+        await AsyncStorage.removeItem(key);
+        return null;
+      }
+      return normalizeProgress(parsedValue);
+    }
+
+    if (
+      isLegacyScenarioProgressV1(parsedValue) &&
+      parsedValue.scenarioId === scenarioId
+    ) {
+      const migrated = normalizeProgress(parsedValue);
+
+      try {
+        await AsyncStorage.setItem(key, JSON.stringify(migrated));
+      } catch {
+        // The valid V1 record remains intact and migration can retry next load.
+      }
+
+      return migrated;
     }
 
     await AsyncStorage.removeItem(key);
@@ -63,7 +130,7 @@ export default class AsyncStorageScenarioProgressRepository
   save(progress: ScenarioProgress): Promise<void> {
     return AsyncStorage.setItem(
       getScenarioProgressStorageKey(progress.scenarioId),
-      JSON.stringify(progress),
+      JSON.stringify(normalizeProgress(progress)),
     );
   }
 

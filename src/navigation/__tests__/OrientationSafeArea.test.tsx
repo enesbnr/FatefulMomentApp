@@ -28,11 +28,16 @@ import React from 'react';
 import Renderer, { act } from 'react-test-renderer';
 import { FlatList, StyleSheet, TextInput } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
+import type { OrientationType } from 'react-native-orientation-locker';
 import App from '../../../App';
 import EmailSignInScreen from '../../features/auth/EmailSignInScreen';
 import AuthButton from '../../features/auth/components/AuthButton';
 
 test('recalculates gameplay layout when safe-area insets change after landscape lock', async () => {
+  let currentOrientation = 'LANDSCAPE-RIGHT' as OrientationType;
+  jest.mocked(Orientation.getOrientation).mockImplementation(callback =>
+    callback(currentOrientation),
+  );
   let tree!: Renderer.ReactTestRenderer;
   await act(() => {
     tree = Renderer.create(<App />);
@@ -57,7 +62,14 @@ test('recalculates gameplay layout when safe-area insets change after landscape 
 
   expect(Orientation.lockToLandscape).toHaveBeenCalled();
 
+  const orientationListener = jest.mocked(
+    Orientation.addOrientationListener,
+  ).mock.calls.at(-1)?.[0];
+  expect(orientationListener).toBeDefined();
+
   await act(() => {
+    currentOrientation = 'LANDSCAPE-LEFT' as OrientationType;
+    orientationListener!(currentOrientation);
     mockSetInsets({ top: 0, right: 16, bottom: 21, left: 59 });
   });
 
@@ -68,6 +80,8 @@ test('recalculates gameplay layout when safe-area insets change after landscape 
   expect(leftObstructedContent.paddingRight).toBe(32);
 
   await act(() => {
+    currentOrientation = 'LANDSCAPE-RIGHT' as OrientationType;
+    orientationListener!(currentOrientation);
     mockSetInsets({ top: 0, right: 59, bottom: 21, left: 16 });
   });
 
@@ -76,6 +90,7 @@ test('recalculates gameplay layout when safe-area insets change after landscape 
   );
   expect(rightObstructedContent.paddingLeft).toBe(66);
   expect(rightObstructedContent.paddingRight).toBe(75);
+  expect(Orientation.getOrientation).toHaveBeenCalledTimes(3);
 
   await act(() => tree.unmount());
 });

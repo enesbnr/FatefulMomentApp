@@ -3,11 +3,10 @@ import { Keyboard, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthLandingScreen from '../features/auth/AuthLandingScreen';
 import CheckYourEmailScreen from '../features/auth/CheckYourEmailScreen';
-import CreateAccountScreen, {
-  type DummyAccount,
-} from '../features/auth/CreateAccountScreen';
+import CreateAccountScreen from '../features/auth/CreateAccountScreen';
 import EmailSignInScreen from '../features/auth/EmailSignInScreen';
 import ResetPasswordScreen from '../features/auth/ResetPasswordScreen';
+import type { DummyAccount } from '../features/auth/model/types';
 import type { AuthScreenProps, AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -15,7 +14,7 @@ const Stack = createNativeStackNavigator<AuthStackParamList>();
 type Props = {
   account: DummyAccount | null;
   onAccountCreated: (account: DummyAccount) => void;
-  onAuthenticated: () => void;
+  onAuthenticated: () => Promise<void>;
 };
 
 export default function AuthNavigator(props: Props) {
@@ -67,7 +66,7 @@ function EmailSignInRoute({ navigation }: AuthScreenProps<'EmailSignIn'>) {
       onSignUp={() => navigation.navigate('CreateAccount')}
       onSignInSuccess={() => {
         Keyboard.dismiss();
-        onAuthenticated();
+        return onAuthenticated();
       }}
       account={account}
     />

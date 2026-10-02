@@ -4,12 +4,16 @@ import type {
   DecisionAnswer,
   ScenarioProgress,
 } from '../../../entities/scenario-progress/model/types';
+import { SCENARIO_PROGRESS_SCHEMA_VERSION } from '../../../entities/scenario-progress/model/types';
 
 const SAVE_INTERVAL_MS = 2_000;
+const COMPLETION_SAVE_ATTEMPTS = 2;
 
 export default function useScenarioResume(scenarioId: string) {
   const repository = useScenarioProgressRepository();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [savedProgress, setSavedProgress] = useState<ScenarioProgress | null>(
     null,
   );
@@ -71,6 +75,9 @@ export default function useScenarioResume(scenarioId: string) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setLoadError(false);
+    latestProgressRef.current = null;
+    setSavedProgress(null);
 
     repository
       .get(scenarioId)
@@ -86,6 +93,7 @@ export default function useScenarioResume(scenarioId: string) {
         if (!cancelled) {
           latestProgressRef.current = null;
           setSavedProgress(null);
+          setLoadError(true);
         }
       })
       .finally(() => {
@@ -101,7 +109,11 @@ export default function useScenarioResume(scenarioId: string) {
         persist(latestProgress).catch(() => undefined);
       }
     };
-  }, [persist, repository, scenarioId]);
+  }, [loadAttempt, persist, repository, scenarioId]);
+
+  const retryLoad = useCallback(() => {
+    setLoadAttempt(attempt => attempt + 1);
+  }, []);
 
   const recordProgress = useCallback(
     (
@@ -110,10 +122,10 @@ export default function useScenarioResume(scenarioId: string) {
       answers: DecisionAnswer[],
     ) => {
       const progress: ScenarioProgress = {
+        schemaVersion: SCENARIO_PROGRESS_SCHEMA_VERSION,
         scenarioId,
         positionSeconds: Math.max(0, positionSeconds),
         durationSeconds: Math.max(0, durationSeconds),
-        completedDecisionIds: answers.map(answer => answer.decisionId),
         answers,
         status: 'in_progress',
         updatedAt: Date.now(),
@@ -132,7 +144,7 @@ export default function useScenarioResume(scenarioId: string) {
     const latestProgress = latestProgressRef.current;
     return latestProgress?.status === 'in_progress'
       ? persist(latestProgress)
-      : (writeInFlightRef.current ?? Promise.resolve());
+      : writeInFlightRef.current ?? Promise.resolve();
   }, [persist]);
 
   const markCompleted = useCallback(
@@ -142,28 +154,52 @@ export default function useScenarioResume(scenarioId: string) {
       answers: DecisionAnswer[],
     ) => {
       const progress: ScenarioProgress = {
+        schemaVersion: SCENARIO_PROGRESS_SCHEMA_VERSION,
         scenarioId,
         positionSeconds: Math.max(positionSeconds, durationSeconds),
         durationSeconds: Math.max(0, durationSeconds),
-        completedDecisionIds: answers.map(answer => answer.decisionId),
         answers,
         status: 'completed',
         updatedAt: Date.now(),
       };
 
-      latestProgressRef.current = progress;
-      setSavedProgress(progress);
-      return persist(progress);
+      const saveCompletion = async () => {
+        let lastError: unknown;
+
+        for (
+          let attempt = 0;
+          attempt < COMPLETION_SAVE_ATTEMPTS;
+          attempt += 1
+        ) {
+          try {
+            await persist(progress);
+            latestProgressRef.current = progress;
+            setSavedProgress(progress);
+            return;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        throw lastError;
+      };
+
+      return saveCompletion();
     },
     [persist, scenarioId],
   );
 
   const resumableProgress =
     savedProgress?.status === 'in_progress' ? savedProgress : null;
+  const completedProgress =
+    savedProgress?.status === 'completed' ? savedProgress : null;
 
   return {
     loading,
+    loadError,
+    retryLoad,
     resumableProgress,
+    completedProgress,
     recordProgress,
     flush,
     markCompleted,

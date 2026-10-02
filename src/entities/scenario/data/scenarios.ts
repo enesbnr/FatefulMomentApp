@@ -28,5 +28,5 @@ export const scenarios: Scenario[] = Array.from({ length: 30 }, (_, index) => ({
       }),
   homePreview: sharedHomePreview,
   simulation: sharedSimulationMedia,
-  decisions: index === 0 ? iraqWarDecisions : [],
+  decisions: index < 15 ? iraqWarDecisions : [],
 }));

@@ -11,27 +11,29 @@ import {
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Orientation from 'react-native-orientation-locker';
-import type { DummyAccount } from '../features/auth/CreateAccountScreen';
 import { demoAccount } from '../features/auth/data/demoAccount';
+import type { DummyAccount } from '../features/auth/model/types';
 import AuthNavigator from './AuthNavigator';
 import GameplayNavigator from './GameplayNavigator';
 import type { RootScreenProps, RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-type AuthSessionContextValue = {
+type DummyAccountContextValue = {
   account: DummyAccount;
   setAccount: Dispatch<SetStateAction<DummyAccount>>;
 };
 
-const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
+const DummyAccountContext = createContext<DummyAccountContextValue | null>(
+  null,
+);
 
 export default function RootNavigator() {
   const [account, setAccount] = useState<DummyAccount>(demoAccount);
-  const authSession = useMemo(() => ({ account, setAccount }), [account]);
+  const dummyAccount = useMemo(() => ({ account, setAccount }), [account]);
 
   return (
-    <AuthSessionContext.Provider value={authSession}>
+    <DummyAccountContext.Provider value={dummyAccount}>
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="Auth"
@@ -45,18 +47,19 @@ export default function RootNavigator() {
           />
         </Stack.Navigator>
       </NavigationContainer>
-    </AuthSessionContext.Provider>
+    </DummyAccountContext.Provider>
   );
 }
 
 function AuthRoute({ navigation }: RootScreenProps<'Auth'>) {
-  const { account, setAccount } = useAuthSession();
+  const { account, setAccount } = useDummyAccount();
 
   const handleAuthenticated = useCallback(() => {
     navigation.reset({
       index: 0,
       routes: [{ name: 'Gameplay' }],
     });
+    return Promise.resolve();
   }, [navigation]);
 
   return (
@@ -78,10 +81,10 @@ function GameplayRoute() {
   );
 }
 
-function useAuthSession() {
-  const context = useContext(AuthSessionContext);
+function useDummyAccount() {
+  const context = useContext(DummyAccountContext);
   if (!context) {
-    throw new Error('useAuthSession must be used within AuthSessionContext');
+    throw new Error('useDummyAccount must be used within DummyAccountContext');
   }
   return context;
 }
@@ -95,11 +98,7 @@ function AuthOrientationBoundary({ children }: { children: ReactNode }) {
   return children;
 }
 
-function GameplayOrientationBoundary({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function GameplayOrientationBoundary({ children }: { children: ReactNode }) {
   useFocusEffect(
     useCallback(() => {
       Orientation.lockToLandscape();

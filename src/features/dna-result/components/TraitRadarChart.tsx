@@ -1,4 +1,6 @@
 import Svg, { Line, Polygon, Text as SvgText } from 'react-native-svg';
+import { fontFamilies } from '../../../theme/typography';
+import { appColors, withAlpha } from '../../../theme/colors';
 import type { DnaTraitScores } from '../model/types';
 import {
   dnaResultColors,
@@ -45,13 +47,18 @@ export default function TraitRadarChart({ scores }: Props) {
   ];
 
   return (
-    <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} testID="dna-radar-chart">
+    <Svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      testID="dna-radar-chart"
+    >
       {[0.25, 0.5, 0.75, 1].map(ratio => (
         <Polygon
           key={ratio}
           points={pointsFor(Array(6).fill(ratio))}
           fill="none"
-          stroke="#1E293B"
+          stroke={appColors.chartGrid}
           strokeWidth={0.5}
         />
       ))}
@@ -64,14 +71,15 @@ export default function TraitRadarChart({ scores }: Props) {
             y1={centerY}
             x2={end.x}
             y2={end.y}
-            stroke="#1E293B"
+            stroke={appColors.chartGrid}
             strokeWidth={0.5}
           />
         );
       })}
       <Polygon
+        testID="dna-radar-score-polygon"
         points={pointsFor(scorePoints)}
-        fill="rgba(6, 182, 212, 0.4)"
+        fill={withAlpha(appColors.accentStrong, 0.4)}
         stroke={dnaResultColors.radar}
         strokeWidth={1.5}
       />
@@ -82,7 +90,7 @@ export default function TraitRadarChart({ scores }: Props) {
           y={labelPositions[index].y}
           textAnchor={labelPositions[index].anchor}
           fill={dnaResultColors.subdued}
-          fontFamily="Inter-Bold"
+          fontFamily={fontFamilies.bold}
           fontSize={6}
         >
           {dnaTraitLabels[trait]}

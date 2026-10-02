@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useGameplaySafeArea } from '../../../app/providers/GameplaySafeAreaProvider';
 import { appColors } from '../../../theme/colors';
 import type { GameplayScreenProps } from '../../../navigation/types';
 import AppHeader from '../../../shared/components/app-header/AppHeader';
@@ -12,7 +12,7 @@ export default function ScenarioBriefingScreen({
   navigation,
   route,
 }: GameplayScreenProps<'ScenarioBriefing'>) {
-  const insets = useSafeAreaInsets();
+  const { insets } = useGameplaySafeArea();
   const scenario = getScenarioById(route.params.scenarioId);
 
   return (

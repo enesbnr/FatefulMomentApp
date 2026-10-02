@@ -4,9 +4,11 @@ jest.mock(
 );
 
 import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import Renderer, { act } from 'react-test-renderer';
 import { StyleSheet, Text, TextInput } from 'react-native';
 import App from '../../../../App';
+import AuthNavigator from '../../../navigation/AuthNavigator';
 import CheckYourEmailScreen from '../CheckYourEmailScreen';
 import CreateAccountScreen from '../CreateAccountScreen';
 import EmailSignInScreen from '../EmailSignInScreen';
@@ -98,6 +100,70 @@ test('filled auth fields retain their active border after blur', async () => {
   expect(StyleSheet.flatten(input.parent!.props.style).borderColor).toBe(
     'rgba(255, 255, 255, 0.05)',
   );
+});
+
+test('waits for sign-in, prevents duplicate submissions, and reports failure', async () => {
+  let rejectSignIn!: (reason: Error) => void;
+  const onSignInSuccess = jest.fn(
+    () =>
+      new Promise<void>((_resolve, reject) => {
+        rejectSignIn = reject;
+      }),
+  );
+  let tree!: Renderer.ReactTestRenderer;
+
+  await act(() => {
+    tree = Renderer.create(
+      <NavigationContainer>
+        <AuthNavigator
+          account={{
+            fullName: 'Test User',
+            email: 'test@test.com',
+            password: 'ABcd1234',
+          }}
+          onAccountCreated={jest.fn()}
+          onAuthenticated={onSignInSuccess}
+        />
+      </NavigationContainer>,
+    );
+  });
+
+  await act(() => {
+    tree.root
+      .findAllByType(AuthButton)
+      .find(button => button.props.label === 'Continue with Email')!
+      .props.onPress();
+  });
+
+  const screen = () => tree.root.findByType(EmailSignInScreen);
+  const inputs = screen().findAllByType(TextInput);
+  await act(() => {
+    inputs[0].props.onChangeText('test@test.com');
+    inputs[1].props.onChangeText('ABcd1234');
+  });
+
+  let firstSubmission!: Promise<void>;
+  await act(() => {
+    firstSubmission = screen().findByType(AuthButton).props.onPress();
+    screen().findByType(AuthButton).props.onPress();
+  });
+
+  expect(onSignInSuccess).toHaveBeenCalledTimes(1);
+  expect(screen().findByType(AuthButton).props.label).toBe('Signing in…');
+  expect(screen().findByType(AuthButton).props.disabled).toBe(true);
+
+  await act(async () => {
+    rejectSignIn(new Error('storage unavailable'));
+    await firstSubmission;
+  });
+
+  expect(screen().findByType(AuthButton).props.label).toBe('Sign in');
+  expect(screen().findByType(AuthButton).props.disabled).toBe(false);
+  expect(
+    screen().findByProps({ testID: 'sign-in-submit-error' }).props.children,
+  ).toBe('Sign in could not be completed. Please try again.');
+
+  await act(() => tree.unmount());
 });
 
 test('forgot password opens reset flow, validates email, and returns to sign in', async () => {

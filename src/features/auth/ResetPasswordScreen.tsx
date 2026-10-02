@@ -10,11 +10,12 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { colors, layout } from '../../theme/authLanding';
 import {
-  emailSpacing,
-  getEmailContentTop,
-} from '../../theme/emailSignIn';
+  colors,
+  getContentTopSpacing,
+  layout,
+} from '../../theme/authLanding';
+import { emailSpacing } from '../../theme/emailSignIn';
 import AuthButton from './components/AuthButton';
 import AuthHeader from './components/AuthHeader';
 import BackButton from './components/BackButton';
@@ -45,7 +46,7 @@ export default function ResetPasswordScreen({
         <ScrollView
           contentContainerStyle={[
             styles.content,
-            { paddingTop: getEmailContentTop(insets.top) },
+            { paddingTop: getContentTopSpacing(insets.top) },
           ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -109,8 +110,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexShrink: 0,
   },
-  header: { paddingTop: emailSpacing.backToHeaderTop },
-  back: { position: 'absolute', top: 0, left: 0 },
+  header: { position: 'relative' },
+  back: {
+    position: 'absolute',
+    top: -emailSpacing.backToHeaderTop,
+    left: 0,
+  },
   form: { marginTop: emailSpacing.headerToForm },
   submit: { marginTop: 24 },
 });

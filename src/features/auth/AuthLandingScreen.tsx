@@ -39,7 +39,9 @@ export default function AuthLandingScreen({
       >
         <View style={[styles.contentWidth, styles.upperContent]}>
           <View style={styles.header}>
-            <AuthHeader subtitle="Sign in to continue your journey" />
+            <AuthHeader
+              subtitle="Sign in to continue your journey"
+            />
           </View>
           <View style={styles.buttons}>
             <AuthButton

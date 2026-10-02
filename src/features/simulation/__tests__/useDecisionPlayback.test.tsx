@@ -9,15 +9,18 @@ function HookHarness({
   onChange,
   initialAnswers,
   timerRunning = true,
+  presentationDelayMs,
 }: {
   onChange: (state: PlaybackState) => void;
   initialAnswers?: { decisionId: string; optionId: string | null }[];
   timerRunning?: boolean;
+  presentationDelayMs?: number;
 }) {
   const state = useDecisionPlayback({
     decisions: [decisionFixture],
     timerRunning,
     initialAnswers,
+    presentationDelayMs,
   });
 
   useEffect(() => onChange(state), [onChange, state]);
@@ -28,6 +31,30 @@ function HookHarness({
 describe('useDecisionPlayback', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
+
+  test('waits for the presentation delay without changing the stored trigger', async () => {
+    let latest!: PlaybackState;
+    let tree!: Renderer.ReactTestRenderer;
+
+    await act(() => {
+      tree = Renderer.create(
+        <HookHarness
+          presentationDelayMs={250}
+          onChange={state => {
+            latest = state;
+          }}
+        />,
+      );
+    });
+
+    await act(() => latest.handleProgress(0.249));
+    expect(latest.activeDecision).toBeUndefined();
+
+    await act(() => latest.handleProgress(0.25));
+    expect(latest.activeDecision?.id).toBe(decisionFixture.id);
+
+    await act(() => tree.unmount());
+  });
 
   test('completes a selected decision when its timer expires', async () => {
     let latest!: PlaybackState;
@@ -110,9 +137,7 @@ describe('useDecisionPlayback', () => {
     await act(() => {
       tree = Renderer.create(
         <HookHarness
-          initialAnswers={[
-            { decisionId: decisionFixture.id, optionId: null },
-          ]}
+          initialAnswers={[{ decisionId: decisionFixture.id, optionId: null }]}
           onChange={state => {
             latest = state;
           }}
@@ -167,22 +192,63 @@ describe('useDecisionPlayback', () => {
     await act(() => {
       tree.update(<HookHarness onChange={onChange} timerRunning={false} />);
     });
+    const progressWhenPaused = latest.progress;
+    expect(progressWhenPaused).toBeCloseTo(2 / 3, 1);
     await act(() => jest.advanceTimersByTime(20_000));
     expect(latest.phase).toBe('choosing');
     expect(latest.urgent).toBe(false);
+    expect(latest.progress).toBeLessThanOrEqual(progressWhenPaused);
 
     await act(() => {
       tree.update(<HookHarness onChange={onChange} timerRunning />);
     });
+    expect(latest.progress).toBeLessThanOrEqual(progressWhenPaused);
     await act(() => jest.advanceTimersByTime(5_999));
     expect(latest.urgent).toBe(false);
 
     await act(() => jest.advanceTimersByTime(1));
     expect(latest.urgent).toBe(true);
+    expect(latest.progress).toBeCloseTo(
+      decisionFixture.urgentAtMs / decisionFixture.durationMs,
+    );
+    expect(latest.progress).toBeLessThan(progressWhenPaused);
 
     await act(() => jest.advanceTimersByTime(4_000));
     expect(latest.phase).toBe('revealed');
 
     await act(() => tree.unmount());
+  });
+
+  test('does not restart the timer effect when the urgent boundary updates remaining time', async () => {
+    let latest!: PlaybackState;
+    let renderCount = 0;
+    let tree!: Renderer.ReactTestRenderer;
+    let now = 0;
+    const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => now++);
+
+    await act(() => {
+      tree = Renderer.create(
+        <HookHarness
+          onChange={state => {
+            renderCount += 1;
+            latest = state;
+          }}
+        />,
+      );
+    });
+    await act(() => latest.handleProgress(0));
+    const rendersBeforeUrgent = renderCount;
+
+    await act(() =>
+      jest.advanceTimersByTime(
+        decisionFixture.durationMs - decisionFixture.urgentAtMs,
+      ),
+    );
+
+    expect(latest.urgent).toBe(true);
+    expect(renderCount - rendersBeforeUrgent).toBeLessThanOrEqual(2);
+
+    await act(() => tree.unmount());
+    nowSpy.mockRestore();
   });
 });
